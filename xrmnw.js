@@ -1,9 +1,9 @@
 const mangayomiSources = [{
-    "name": "头牌漫画",
+    "name": "秀人美女",
     "lang": "zh",
-    "baseUrl": "https://www.toupaimh.com",
+    "baseUrl": "https://www.xiu01.top",
     "apiUrl": "",
-    "iconUrl": "https://www.toupaimh.com/favicon.ico/",
+    "iconUrl": "https://www.xiu01.top/img/logo.png",
     "typeSource": "single",
     "isManga": true,
     "isNsfw": true,
@@ -19,8 +19,6 @@ class Util {
         const byteArray = new Uint8Array(
             Array.from(str).map(char => char.charCodeAt(0))
         );
-        // 使用 TextDecoder 解码为 UTF-8 编码的字符串
-
         const correctText = Util.utf8Decode(byteArray);
         return correctText
     }
@@ -47,7 +45,6 @@ class Util {
                 string += String.fromCharCode(0xD800 + (codePoint >> 10), 0xDC00 + (codePoint & 0x3FF));
             }
         }
-
         return string;
     }
 }
@@ -75,8 +72,8 @@ class DefaultExtension extends MProvider {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
+        //https://www.xiu01.top
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const endPage = 65
         let popUrl = ""
         if (page < 2) {
             popUrl = baseUrl + `/finish`
@@ -90,6 +87,7 @@ class DefaultExtension extends MProvider {
         }
     }
     async getLatestUpdates(page) {
+        //https://www.xiu01.top/zx.html
         const baseUrl = mangayomiSources[0]['baseUrl']
         const endPage = 20
         let updateUrl = ""
@@ -146,13 +144,13 @@ class DefaultExtension extends MProvider {
         const detail_desc=doc.select('div.right>p.hidden-xs')[0].text
         const detail_author=doc.select('div.right>div>span>a')[0].text
 
-        const item_list=doc.select('ul.bookAll-item-list')[1]
-        const lists=item_list.select('li>a')
+        const lists=doc.select('ul.bookAll-item-list>li>a')
         const chapters=[]
         for(const li of lists){
             chapters.push({name:li.attr('title'),url:li.attr('href')})
         }
         
+
         return {
             name: name,
             imageUrl: baseUrl+detail_cover,
@@ -160,7 +158,7 @@ class DefaultExtension extends MProvider {
             author: detail_author,
             status: 0,
             episodes: chapters.reverse()
-        }
+        };
     }
 
     // For anime episode video list

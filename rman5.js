@@ -64,44 +64,44 @@ class DefaultExtension extends MProvider {
     async getDetail(url) {
         const baseUrl = mangayomiSources[0]['baseUrl']
         const detailUrl = baseUrl + url
-    
-    const res=await new Client().get(detailUrl)
-        const doc=new Document(res.body)    
-        const name=doc.select('h1.hl-dc-title')[0].text
-        const detail_cover = doc.select('div.hl-dc-pic>span')[0].attr('data-original')       
+
+        const res = await new Client().get(detailUrl)
+        const doc = new Document(res.body)
+        const name = doc.select('h1.hl-dc-title')[0].text
+        const detail_cover = doc.select('div.hl-dc-pic>span')[0].attr('data-original')
         const detail_li = doc.select('li.hl-col-xs-12')
-           
+
         const detail_desc = detail_li[4].text.trim()
         const detail_author = detail_li[3].text.trim()
-        const chapter_list=doc.select('a.module-play-list-link')
-        const chapters=[]
-        for(const l of chapter_list){
-             chapters.push({name:l.attr('title'),url:l.attr('href')})
-          }
-               
-       return {
+        const chapter_list = doc.select('a.module-play-list-link')
+        const chapters = []
+        for (const l of chapter_list) {
+            chapters.push({ name: l.attr('title'), url: l.attr('href') })
+        }
+
+        return {
             name: name,
             imageUrl: detail_cover,
             description: detail_desc,
             author: detail_author,
             status: 0,
-            episodes: chapters
+            episodes: chapters.reverse()
         };
-                
+
     }
     // For anime episode video list
     async getPageList(url) {
-         const baseUrl = mangayomiSources[0]['baseUrl']
+        const baseUrl = mangayomiSources[0]['baseUrl']
         const pageListUrl = baseUrl + url
-    
-    const res=await new Client().get(pageListUrl)
-        const doc=new Document(res.body)    
-       const picList=doc.select('img.lazy')
-       const picUrls=[]
-       for(const p of picList){
-           picUrls.push(p.attr('data-original'))
-        }   
-       return picUrls                           
+
+        const res = await new Client().get(pageListUrl)
+        const doc = new Document(res.body)
+        const picList = doc.select('img.lazy')
+        const picUrls = []
+        for (const p of picList) {
+            picUrls.push(p.attr('data-original'))
+        }
+        return picUrls
     }
     // For manga chapter pages
     async getVideoList(url) {

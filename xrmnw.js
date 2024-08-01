@@ -11,7 +11,7 @@ const mangayomiSources = [{
     "dateFormat": "",
     "dateFormatLocale": "",
     "pkgPath": "",
-    "userAgent":"Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
 }];
 
 class Util {
@@ -54,14 +54,14 @@ class DefaultExtension extends MProvider {
         const res = await new Client().get(url)
         const doc = new Document(res.body);
         const items = []
-        const elements = doc.select('div.mipui-xs-item-list')
+        const elements = doc.select('li.i_list')
         for (const element of elements) {
-            const name = element.select("h4.list-title>a")[0].text
-            const link = element.select("h4.list-title>a")[0].attr('href')
+            const name = element.select("a")[0].attr('title')
+            const link = element.select("a")[0].attr('href')
             const imageUrl = element.select('img')[0].attr('src')
             items.push({
                 name: Util.decodeZH(name),
-                imageUrl: mangayomiSources[0]['baseUrl']+imageUrl,
+                imageUrl: mangayomiSources[0]['baseUrl'] + imageUrl,
                 link: link
             })
         }
@@ -72,60 +72,40 @@ class DefaultExtension extends MProvider {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
-        //https://www.xiu01.top
+        const endPage = 0
         const baseUrl = mangayomiSources[0]['baseUrl']
-        let popUrl = ""
-        if (page < 2) {
-            popUrl = baseUrl + `/finish`
-        } else {
-            popUrl = baseUrl + `/finish/index_${page}.html`
-        }
-
+        const popUrl = `${baseUrl}/tj.html`
         return {
-            list: await this.getItems(popUrl),
+            list: await this.getItems(baseUrl),
             hasNextPage: page <= endPage
         }
     }
     async getLatestUpdates(page) {
-        //https://www.xiu01.top/zx.html
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const endPage = 20
-        let updateUrl = ""
-        if (page < 2) {
-            updateUrl = baseUrl + `/latest/index.html`
-        } else {
-            updateUrl = baseUrl + `/latest/index_${page}.html`
-        }
-
+        const endPage = 0
+        const updateUrl = `${baseUrl}/zx.html`
         return {
             list: await this.getItems(updateUrl),
             hasNextPage: page <= endPage
         };
-
     }
 
     async search(query, page, filters) {
-        const endPage=65
+
+        const endPage = 100
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const searchUrl = baseUrl + `/e/search/index.php`
-        const res = await new Client().post(searchUrl, { "Content-Type": "application/x-www-form-urlencoded" }, { 'show': 'title', 'keyboard': query })
-        let relocation = ''
-        if (res.statusCode === 302) {
-            relocation = res['headers']['location']
-        }
-        let redirect_url = baseUrl + relocation
-        redirect_url = redirect_url.replace(/\.html$/, `_${page}.html`)
-        const search_res=await new Client().get(redirect_url)
-        const search_doc=new Document(search_res.body)
-        const elements=search_doc.select('div.item-media>a')
-        const items=[]
-        for(const element of elements){
-            const name=element.attr('data-title')
-            const link=element.attr('href')
-            const imageUrl=element.select('mip-img')[0].attr('src')
+        const searchUrl = baseUrl + `/plus/search/index.asp?keyword=${query}&searchtype=titlekeywords`
+        const res = await new Client().get(searchUrl)
+        const search_doc = new Document(res.body)
+        const elements = search_doc.select('div.sousuo')
+        const items = []
+        for (const element of elements) {
+            const name = element.select('span')[0].text
+            const link = element.select('a')[0].attr('href')
+
             items.push({
                 name: name,
-                imageUrl: mangayomiSources[0]['baseUrl']+imageUrl,
+                imageUrl: mangayomiSources[0]['baseUrl'] + '/uploadfile/pic/15070.jpg',
                 link: link
             })
         }
@@ -136,46 +116,56 @@ class DefaultExtension extends MProvider {
     }
     async getDetail(url) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const res=await new Client().get(baseUrl+url)
-        const doc=new Document(res.body)
+        const res = await new Client().get(baseUrl + url)
+        const doc = new Document(res.body)
 
-        const name=doc.select('div.right h1').text
-        const detail_cover=doc.select('div.left img')[0].attr('src')
-        const detail_desc=doc.select('div.right>p.hidden-xs')[0].text
-        const detail_author=doc.select('div.right>div>span>a')[0].text
-
-        const lists=doc.select('ul.bookAll-item-list>li>a')
-        const chapters=[]
-        for(const li of lists){
-            chapters.push({name:li.attr('title'),url:li.attr('href')})
+        const detail_info_div = doc.select('div.item_title')[0]
+        const name = detail_info_div.select('h1')[0].text
+        const desc_p = detail_info_div.select('p')
+        let description = ""
+        for (let i = 0; i < desc_p.length; i++) {
+            if (i < 2) { continue }
+            description += desc_p[i].text
         }
-        
 
         return {
-            name: name,
-            imageUrl: baseUrl+detail_cover,
-            description: detail_desc,
-            author: detail_author,
+            name: Util.decodeZH(name),
+            imageUrl: baseUrl + doc.select('img')[1].attr("src"),
+            description: Util.decodeZH(description),
+            author: "",
             status: 0,
-            episodes: chapters.reverse()
+            episodes: [{ name: '只有这一个章节', url: url }]
         };
     }
 
     // For anime episode video list
     async getPageList(url) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const userAgent=mangayomiSources[0]['userAgent']
-        const pageListUrl = baseUrl + url
-
-        const res = await new Client().get(pageListUrl,{ "user-agent":userAgent  })
-
-        const doc = new Document(res.body)
-        const picList = doc.select('img.lazy')
-        const picUrls = []
-        for (const p of picList) {
-            picUrls.push(p.attr('data-original'))
+        const userAgent = mangayomiSources[0]['userAgent']
+        let imageUrlLists = []
+        const endPage = 30
+        for (let i = 0; i < endPage; i++) {
+            let pageListUrl = baseUrl + url
+            if (i > 0) {
+                pageListUrl = pageListUrl.replace(/\.html/, `_${i}.html`)
+            }
+            const imageUrls = await this.getImageFromXRW(pageListUrl)
+            imageUrlLists.push(...imageUrls)
         }
-        return picUrls
+
+        return imageUrlLists.map(i => baseUrl + i)
+    }
+    async getImageFromXRW(url) {
+        const imageUrlLists = []
+        const res = await new Client().get(url)
+        if (res.statusCode !== 200) {
+            return []
+        }
+        const doc = new Document(res.body)
+        for (const element of doc.select('div.content img')) {
+            imageUrlLists.push(element.attr('src'))
+        }
+        return imageUrlLists
     }
     // For manga chapter pages
     async getVideoList(url) {

@@ -1,17 +1,16 @@
 const mangayomiSources = [{
-    "name": "头牌漫画",
+    "name": "鸟鸟韩漫",
     "lang": "zh",
-    "baseUrl": "https://www.toupaimh.com",
+    "baseUrl": "https://nnhanman6.com",
     "apiUrl": "",
-    "iconUrl": "https://www.toupaimh.com/favicon.ico",
+    "iconUrl": "https://nnhanman6.com/images/logo.png",
     "typeSource": "single",
     "isManga": true,
     "isNsfw": true,
     "version": "0.0.1",
     "dateFormat": "",
     "dateFormatLocale": "",
-    "pkgPath": "",
-    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
+    "pkgPath": ""
 }];
 
 class Util {
@@ -73,15 +72,12 @@ class DefaultExtension extends MProvider {
         const res = await new Client().get(url)
         const doc = new Document(res.body);
         const items = []
-        const elements = doc.select('div.mipui-xs-item-list')
+        const elements = doc.select('div.itemImg a')
         for (const element of elements) {
-            const name = element.select("h4.list-title>a")[0].text
-            const link = element.select("h4.list-title>a")[0].attr('href')
-            const imageUrl = element.select('img')[0].attr('src')
             items.push({
-                name: Util.decodeZH(name),
-                imageUrl: mangayomiSources[0]['baseUrl'] + imageUrl,
-                link: link
+                name: element.attr('title'),
+                imageUrl: element.select('img')[0].attr('src'),
+                link: element.attr('href')
             })
         }
         return items
@@ -92,104 +88,85 @@ class DefaultExtension extends MProvider {
     }
     async getPopular(page) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const endPage = 65
-        let popUrl = ""
-        if (page < 2) {
-            popUrl = baseUrl + `/finish`
-        } else {
-            popUrl = baseUrl + `/finish/index_${page}.html`
-        }
+        const popUrl = baseUrl + '/ranking'
 
         return {
             list: await this.getItems(popUrl),
-            hasNextPage: page <= endPage
-        }
+            hasNextPage: false
+        };
     }
     async getLatestUpdates(page) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const endPage = 20
-        let updateUrl = ""
-        if (page < 2) {
-            updateUrl = baseUrl + `/latest/index.html`
-        } else {
-            updateUrl = baseUrl + `/latest/index_${page}.html`
-        }
+        const updateUrl = baseUrl + '/update'
 
         return {
             list: await this.getItems(updateUrl),
-            hasNextPage: page <= endPage
+            hasNextPage: false
         };
 
     }
-
-    async search(query, page, filters) {
-        const endPage = 65
-        const baseUrl = mangayomiSources[0]['baseUrl']
-        const searchUrl = baseUrl + `/e/search/index.php`
-        const res = await new Client().post(searchUrl, { "Content-Type": "application/x-www-form-urlencoded" }, { 'show': 'title', 'keyboard': query })
-        let relocation = ''
-        let search_doc = ""
-        if (res.statusCode === 302) {
-            relocation = res['headers']['location']
-            let redirect_url = baseUrl + relocation
-            redirect_url = redirect_url.replace(/\.html$/, `_${page}.html`)
-            const search_res = await new Client().get(redirect_url)
-            search_doc = new Document(search_res.body)
-        } else if (res.statusCode === 200) {
-            search_doc = new Document(res.body)
+    async searchParseItem(url){
+        const res=await new Client().get(url)
+        const doc=new Document(res.body)
+        const search_list=doc.select('div.imgBox li>a.ImgA')
+        if(search_list.length==0){
+            return []
         }
-        const elements = search_doc.select('div.item-media>a')
-        const items = []
-        for (const element of elements) {
-            const name = element.attr('data-title')
-            const link = element.attr('href')
-            const imageUrl = element.select('mip-img')[0].attr('src')
+        const items=[]
+        for(const li of search_list){
             items.push({
-                name: name,
-                imageUrl: mangayomiSources[0]['baseUrl'] + imageUrl,
-                link: link
+                name:li.attr('title'),
+                imageUrl:li.select('img')[0].attr('src'),
+                link: li.attr('href')
             })
         }
+        return items
+    }
+    async search(query, page, filters) {
+        const endPage=20
+        const baseUrl = mangayomiSources[0]['baseUrl']
+        const searchUrl = baseUrl + `/search/${query}/page/${page}`
+
         return {
-            list: items,
-            hasNextPage: page <= endPage
+            list: await this.searchParseItem(searchUrl),
+            hasNextPage: page<endPage
         };
+
     }
     async getDetail(url) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const res = await new Client().get(baseUrl + url)
+        const detailUrl = baseUrl + url
+
+        const res = await new Client().get(detailUrl)
         const doc = new Document(res.body)
+        const name = doc.select('div#Cover img')[0].attr('title')
+        const detail_cover = doc.select('div#Cover img')[0].attr('src')
+        const detail_desc = doc.select('p.txtItme')[1].text
+        const detail_author = doc.select('p.txtItme')[0].text
+        const detail_status = doc.select('p.txtItme')[2].text
 
-        const name = doc.select('div.right h1').text
-        const detail_cover = doc.select('div.left img')[0].attr('src')
-        const detail_desc = doc.select('div.right>p.hidden-xs')[0].text
-        const detail_author = doc.select('div.right>div>span>a')[0].text
-
-        const item_list = doc.select('ul.bookAll-item-list')[1]
-        const lists = item_list.select('li>a')
+        const chapter_list = doc.select('div#list li>a')
         const chapters = []
-        for (const li of lists) {
-            chapters.push({ name: li.text, url: li.attr('href') })
+        for (const ll of chapter_list) {
+            chapters.push({ name: ll.text, url: ll.attr('href') })
         }
 
         return {
             name: name,
-            imageUrl: baseUrl + detail_cover,
+            imageUrl: detail_cover,
             description: detail_desc,
             author: detail_author,
-            status: 0,
-            episodes: chapters.reverse()
-        }
-    }
+            status: Util.checkStatus(detail_status),
+            episodes: chapters
+        };
 
+    }
     // For anime episode video list
     async getPageList(url) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const userAgent = mangayomiSources[0]['userAgent']
         const pageListUrl = baseUrl + url
 
-        const res = await new Client().get(pageListUrl, { "user-agent": userAgent })
-
+        const res = await new Client().get(pageListUrl)
         const doc = new Document(res.body)
         const picList = doc.select('img.lazy')
         const picUrls = []

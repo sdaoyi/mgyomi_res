@@ -154,10 +154,8 @@ class DefaultExtension extends MProvider {
         const doc=new Document(res.body)
         const manga_id=doc.select('div#chapterContent')[0].attr('data-ms')
         const manga_cs=doc.select('div#chapterContent')[0].attr('data-cs')
-
-        const res_chapter=await new Client().get(`https://api-get.mgsearcher.com/api/chapter/getinfo?m=${manga_id}&c=${manga_cs}`,
-            {"referer": url,"origin":baseUrl}
-        )
+        const headers={"referer": url,"origin":baseUrl}
+        const res_chapter=await new Client().get(`https://api-get.mgsearcher.com/api/chapter/getinfo?m=${manga_id}&c=${manga_cs}`, headers )
         const chapter_data=JSON.parse(res_chapter.body).data
         console.log(chapter_data)
         const chapter_json=chapter_data.info.images
@@ -166,7 +164,7 @@ class DefaultExtension extends MProvider {
             picUrls.push(cp.url)
         }
       
-        return picUrls
+        return picUrls.map(p=>{return {"url":p,"headers":headers}})
     }
     // For manga chapter pages
     async getVideoList(url) {

@@ -185,16 +185,19 @@ class DefaultExtension extends MProvider {
     // For anime episode video list
     async getPageList(url) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const userAgent = mangayomiSources[0]['userAgent']
-        const pageListUrl = baseUrl + url
+        const headers={ "user-agent": mangayomiSources[0]['userAgent'] }
+        let pageListUrl = baseUrl + url
+        const res = await new Client().get(pageListUrl,headers )
+        let doc = new Document(res.body)
+        const picUrls=[]
+        let pageNum=1
+        while(doc.select('p.info>a.down-page').filter(e=>e.text==='下一页').length>0){
+            const res_page=await new Client().get(pageListUrl.replace(/\.html/,`_${pageNum}.html`),headers)
+            doc=new Document(res_page.body)
+            const onePageImageUrl=doc.select('img.lazy').map(e=>e.attr('data-original'))
+            picUrls.push(...onePageImageUrl)
+            pageNum+=1
 
-        const res = await new Client().get(pageListUrl, { "user-agent": userAgent })
-
-        const doc = new Document(res.body)
-        const picList = doc.select('img.lazy')
-        const picUrls = []
-        for (const p of picList) {
-            picUrls.push(p.attr('data-original'))
         }
         return picUrls
     }

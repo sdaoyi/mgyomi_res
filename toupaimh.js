@@ -19,8 +19,6 @@ class Util {
         const byteArray = new Uint8Array(
             Array.from(str).map(char => char.charCodeAt(0))
         );
-        // 使用 TextDecoder 解码为 UTF-8 编码的字符串
-
         const correctText = Util.utf8Decode(byteArray);
         return correctText
     }
@@ -123,19 +121,20 @@ class DefaultExtension extends MProvider {
     }
 
     async search(query, page, filters) {
-        const endPage = 65
+        let current_page=page-1
         const baseUrl = mangayomiSources[0]['baseUrl']
         const searchUrl = baseUrl + `/e/search/index.php`
-        const res = await new Client().post(searchUrl, { "Content-Type": "application/x-www-form-urlencoded" }, { 'show': 'title', 'keyboard': query })
+        const headers={"referer": baseUrl,"Content-Type": "application/x-www-form-urlencoded","user-agent":'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0'}
+        const res = await new Client().post(searchUrl, headers, { 'show': 'title', 'keyboard': query })
         let relocation = ''
         let search_doc = ""
+       
         if (res.statusCode === 302) {
             relocation = res['headers']['location']
             let redirect_url = baseUrl + relocation
-            redirect_url = redirect_url.replace(/\.html$/, `_${page}.html`)
-            const search_res = await new Client().get(redirect_url)
+            const search_res = await new Client().get(redirect_url.replace(/\.html$/,`_${current_page}.html`))
             search_doc = new Document(search_res.body)
-        } else if (res.statusCode === 200) {
+        } else{
             search_doc = new Document(res.body)
         }
         const elements = search_doc.select('div.item-media>a')
@@ -152,7 +151,7 @@ class DefaultExtension extends MProvider {
         }
         return {
             list: items,
-            hasNextPage: page <= endPage
+            hasNextPage: elements.length>0
         };
     }
     async getDetail(url) {

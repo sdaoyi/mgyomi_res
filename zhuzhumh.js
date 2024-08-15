@@ -50,15 +50,15 @@ class Util {
     }
     static checkStatus(str) {
         switch (true) {
-            case /(.*连载.*|.*ongoing.*)/i.test(str):
+            case /(.*连载.*|.*連載.*|.*ongoing.*)/i.test(str):
                 return 0
-            case /(.*完结.*|.*complete.*)/i.test(str):
+            case /(.*完结.*|.*完結.*|.*complete.*)/i.test(str):
                 return 1
-            case /(.*请假.*|.*hiatus.*)/i.test(str):
+            case /(.*请假.*|.*請假.*|.*hiatus.*)/i.test(str):
                 return 2
-            case /(.*取消.*|.*canceled.*)/i.test(str):
+            case /(.*取消.*|.*取消.*|.*canceled.*)/i.test(str):
                 return 3
-            case /(.*出版.*|.*publishingFinished.*)/i.test(str):
+            case /(.*出版.*|.*出版.*|.*publishingFinished.*)/i.test(str):
                 return 4
             default:
                 return 5
@@ -159,12 +159,9 @@ class DefaultExtension extends MProvider {
 
         const res = await new Client().get(url)
         const doc = new Document(res.body)
-        console.log(doc)
         const picUrls = []
-
         const onePageImageUrl = doc.select('img.lazy').map(e => e.attr('src'))
         picUrls.push(...onePageImageUrl)
-
         return picUrls
     }
     // For manga chapter pages

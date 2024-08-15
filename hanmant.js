@@ -1,17 +1,20 @@
 const mangayomiSources = [{
-    "name": "rman5",
+    "name": "韩漫推荐",
     "lang": "zh",
-    "baseUrl": "https://rman5.com",
+    "baseUrl": "https://www.hanmant.com",
     "apiUrl": "",
-    "iconUrl": "https://rman5.com/imgs/logo_black.png",
+    "iconUrl": "https://www.hanmant.com/favicon.ico",
     "typeSource": "single",
     "isManga": true,
     "isNsfw": true,
     "version": "0.0.1",
     "dateFormat": "",
     "dateFormatLocale": "",
-    "pkgPath": ""
+    "pkgPath": "",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
 }];
+
+const headers = { 'referer': mangayomiSources[0]['baseUrl'], 'user-agent': mangayomiSources[0]['userAgent'] };
 
 class Util {
     static decodeZH(str) {
@@ -68,18 +71,22 @@ class Util {
 
 class DefaultExtension extends MProvider {
     async getItems(url) {
-        const res = await new Client().get(url)
+        const res = await new Client().get(url, headers)
         const doc = new Document(res.body);
         const items = []
-        const elements = doc.select('a.hl-item-thumb')
+        const elements = doc.select('ul.u_list>li')
         for (const element of elements) {
+            const name = element.select('div.neirong>a')[0].text
+            const link = element.select('div.neirong>a')[0].attr('href')
+            const imageUrl = element.select('div.pic>a')[0].select('img')[0].attr('src')
             items.push({
-                name: element.attr('title'),
-                imageUrl: element.attr('data-original'),
-                link: element.attr('href')
+                name: name,
+                imageUrl: imageUrl,
+                link: mangayomiSources[0]['baseUrl'] + link
             })
         }
-        return items
+
+        return { items: items, hasNextPage: false }
     }
 
     getHeaders(url) {
@@ -87,49 +94,50 @@ class DefaultExtension extends MProvider {
     }
     async getPopular(page) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const popUrl = baseUrl + '/bookrank/daily'
+        const popUrl = baseUrl + "/index.php/custom/hot"
+        const result = await this.getItems(popUrl)
 
         return {
-            list: await this.getItems(popUrl),
-            hasNextPage: false
-        };
+            list: result.items,
+            hasNextPage: result.hasNextPage
+        }
     }
     async getLatestUpdates(page) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const updateUrl = baseUrl + '/newbooks'
+        const updateUrl = baseUrl + "/index.php/custom/update"
+        const result = await this.getItems(updateUrl)
 
         return {
-            list: await this.getItems(updateUrl),
-            hasNextPage: false
+            list: result.items,
+            hasNextPage: result.hasNextPage
         };
 
     }
+
     async search(query, page, filters) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const searchUrl = baseUrl + `/cata.php?key=${query}`
+        const searchUrl = baseUrl + `/index.php/search/${query}/${page}`
+        const result = await this.getItems(searchUrl)
 
         return {
-            list: await this.getItems(searchUrl),
-            hasNextPage: false
+            list: result.items,
+            hasNextPage: true
         };
-
     }
     async getDetail(url) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
-        const detailUrl = baseUrl + url
-
-        const res = await new Client().get(detailUrl)
+        //   https://www.hanmant.com/index.php/comic/zhegongsiguiwole
+        const res = await new Client().get(url, headers)
         const doc = new Document(res.body)
-        const name = doc.select('h1.hl-dc-title')[0].text
-        const detail_cover = doc.select('div.hl-dc-pic>span')[0].attr('data-original')
-        const detail_li = doc.select('li.hl-col-xs-12')
 
-        const detail_desc = detail_li[4].text.trim()
-        const detail_author = detail_li[3].text.trim()
-        const chapter_list = doc.select('a.module-play-list-link')
+        const name = doc.select('div.title')[0].text.trim()
+        const detail_cover = doc.select('div.info>div.img>img')[0].attr('src')
+        const detail_desc = doc.select('div.text')[0].text
+        const detail_author = doc.select('div.info>p.tage')[1].text
+
+        const item_list = doc.select('div.listbox>ul.list>li>a')
         const chapters = []
-        for (const l of chapter_list) {
-            chapters.push({ name: l.attr('title'), url: l.attr('href') })
+        for (const li of item_list) {
+            chapters.push({ name: li.text, url: mangayomiSources[0]['baseUrl'] + li.attr('href') })
         }
 
         return {
@@ -137,23 +145,17 @@ class DefaultExtension extends MProvider {
             imageUrl: detail_cover,
             description: detail_desc,
             author: detail_author,
-            status: 0,
+            status: 5,
             episodes: chapters.reverse()
-        };
-
+        }
     }
+
     // For anime episode video list
     async getPageList(url) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
-        const pageListUrl = baseUrl + url
 
-        const res = await new Client().get(pageListUrl)
+        const res = await new Client().get(url, headers)
         const doc = new Document(res.body)
-        const picList = doc.select('img.lazy')
-        const picUrls = []
-        for (const p of picList) {
-            picUrls.push(p.attr('data-original'))
-        }
+        const picUrls = doc.select('div.chapterbox>li>img').map(e => e.attr('src'))
         return picUrls
     }
     // For manga chapter pages

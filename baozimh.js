@@ -18,8 +18,6 @@ class Util {
         const byteArray = new Uint8Array(
             Array.from(str).map(char => char.charCodeAt(0))
         );
-        // 使用 TextDecoder 解码为 UTF-8 编码的字符串
-
         const correctText = Util.utf8Decode(byteArray);
         return correctText
     }
@@ -66,6 +64,7 @@ class Util {
         }
     }
 }
+
 
 class DefaultExtension extends MProvider {
     async getItems(url) {
@@ -157,7 +156,6 @@ class DefaultExtension extends MProvider {
         const headers={"referer": url,"origin":baseUrl}
         const res_chapter=await new Client().get(`https://api-get.mgsearcher.com/api/chapter/getinfo?m=${manga_id}&c=${manga_cs}`, headers )
         const chapter_data=JSON.parse(res_chapter.body).data
-        console.log(chapter_data)
         const chapter_json=chapter_data.info.images
         const picUrls = []
         for (const cp of chapter_json) {

@@ -151,7 +151,13 @@ class DefaultExtension extends MProvider {
         const doc = new Document(res.body)
         const pageNum = doc.select('a.fast-forward')[0].attr('data-page') - 0
         const pageUrl = doc.select('img#current-page-image')[0].attr('data-prefix')
-        const picUrls = Array(pageNum).fill().map((_, i) => { return `${pageUrl}/${i + 1}.jpg` })
+        const pageUrl2=`${pageUrl}2.jpg`
+        const resPage2=await new Client().get(pageUrl2,headers)
+        let image_ext=".jpg"
+        if(resPage2.statusCode==404){
+            image_ext='.png'
+        }
+        const picUrls = Array(pageNum).fill().map((_, i) => { return `${pageUrl}${i + 1}${image_ext}` })
         return picUrls
     }
     // For manga chapter pages

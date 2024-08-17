@@ -146,18 +146,19 @@ class DefaultExtension extends MProvider {
 
     // For anime episode video list
     async getPageList(url) {
-
+        const detailUrl=url.replace(/\/\d+$/,'')
+        const resDetail = await new Client().get(detailUrl, headers)
+        const docDetail = new Document(resDetail.body)
+        let image_ext_pre3=docDetail.select('img.comic-rows-videos-div').slice(0,3).map(e=>e.attr('data-srcset')).map(e=>e.match(/\/\w+(\.\w+)$/)[1])
+        
         const res = await new Client().get(url, headers)
         const doc = new Document(res.body)
         const pageNum = doc.select('a.fast-forward')[0].attr('data-page') - 0
         const pageUrl = doc.select('img#current-page-image')[0].attr('data-prefix')
-        const pageUrl2=`${pageUrl}2.jpg`
-        const resPage2=await new Client().get(pageUrl2,headers)
-        let image_ext=".jpg"
-        if(resPage2.statusCode==404){
-            image_ext='.png'
-        }
-        const picUrls = Array(pageNum).fill().map((_, i) => { return `${pageUrl}${i + 1}${image_ext}` })
+        const image_ext=image_ext_pre3.pop()
+       
+        let  picUrls = Array(pageNum).fill().map((_, i) => { return `${pageUrl}${i + 1}${image_ext}` })
+        picUrls=picUrls.map((e,i)=>i<image_ext_pre3.length?e.replace(/\.\w+$/,image_ext_pre3[i]):e)
         return picUrls
     }
     // For manga chapter pages

@@ -1,9 +1,9 @@
 const mangayomiSources = [{
     "name": "鸟鸟韩漫",
     "lang": "zh",
-    "baseUrl": "https://nnhanman6.com",
+    "baseUrl": "https://nnhanman7.com",
     "apiUrl": "",
-    "iconUrl": "https://nnhanman6.com/images/logo.png",
+    "iconUrl": "https://nnhanman7.com/images/logo.png",
     "typeSource": "single",
     "isManga": true,
     "isNsfw": true,
@@ -63,6 +63,9 @@ class Util {
                 return 5
         }
     }
+    static pureString(str) {
+        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ')
+    }
 }
 
 class DefaultExtension extends MProvider {
@@ -103,31 +106,31 @@ class DefaultExtension extends MProvider {
         };
 
     }
-    async searchParseItem(url){
-        const res=await new Client().get(url)
-        const doc=new Document(res.body)
-        const search_list=doc.select('div.imgBox li>a.ImgA')
-        if(search_list.length==0){
+    async searchParseItem(url) {
+        const res = await new Client().get(url)
+        const doc = new Document(res.body)
+        const search_list = doc.select('div.imgBox li>a.ImgA')
+        if (search_list.length == 0) {
             return []
         }
-        const items=[]
-        for(const li of search_list){
+        const items = []
+        for (const li of search_list) {
             items.push({
-                name:li.attr('title'),
-                imageUrl:li.select('img')[0].attr('src'),
+                name: li.attr('title'),
+                imageUrl: li.select('img')[0].attr('src'),
                 link: li.attr('href')
             })
         }
         return items
     }
     async search(query, page, filters) {
-        const endPage=20
+        const endPage = 20
         const baseUrl = mangayomiSources[0]['baseUrl']
         const searchUrl = baseUrl + `/search/${query}/page/${page}`
 
         return {
             list: await this.searchParseItem(searchUrl),
-            hasNextPage: page<endPage
+            hasNextPage: page < endPage
         };
 
     }
@@ -139,7 +142,7 @@ class DefaultExtension extends MProvider {
         const doc = new Document(res.body)
         const name = doc.select('div#Cover img')[0].attr('title')
         const detail_cover = doc.select('div#Cover img')[0].attr('src')
-        const detail_desc = doc.select('p.txtItme')[1].text
+        const detail_desc = doc.select('p.txtDesc')[0].text
         const detail_author = doc.select('p.txtItme')[0].text
         const detail_status = doc.select('p.txtItme')[2].text
 

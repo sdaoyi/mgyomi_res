@@ -66,6 +66,9 @@ class Util {
                 return 5
         }
     }
+    static pureString(str){
+        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g,' ')
+    }
 }
 
 

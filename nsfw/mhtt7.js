@@ -66,8 +66,10 @@ class Util {
                 return 5
         }
     }
+    static pureString(str) {
+        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ').trim()
+    }
 }
-
 
 class DefaultExtension extends MProvider {
     async getItems(url) {

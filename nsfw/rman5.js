@@ -10,8 +10,11 @@ const mangayomiSources = [{
     "version": "0.0.1",
     "dateFormat": "",
     "dateFormatLocale": "",
-    "pkgPath": ""
+    "pkgPath": "",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
 }];
+
+const headers = { 'referer': mangayomiSources[0]['baseUrl'], 'user-agent': mangayomiSources[0]['userAgent'] };
 
 class Util {
     static decodeZH(str) {
@@ -63,8 +66,10 @@ class Util {
                 return 5
         }
     }
+    static pureString(str) {
+        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ').trim()
+    }
 }
-
 
 class DefaultExtension extends MProvider {
     async getItems(url) {
@@ -118,18 +123,18 @@ class DefaultExtension extends MProvider {
         const baseUrl = mangayomiSources[0]['baseUrl']
         const detailUrl = baseUrl + url
 
-        const res = await new Client().get(detailUrl)
+        const res = await new Client().get(detailUrl, headers)
         const doc = new Document(res.body)
         const name = doc.select('h1.hl-dc-title')[0].text
         const detail_cover = doc.select('div.hl-dc-pic>span')[0].attr('data-original')
-        const detail_li = doc.select('li.hl-col-xs-12')
-
-        const detail_desc = detail_li[4].text.trim()
-        const detail_author = detail_li[3].text.trim()
+        const detail_desc = doc.select('div.hl-data-xs>span')[3].text
+        const detail_author = doc.select('div.hl-data-xs>span')[1].select('a')[0].text
+        const detail_tags = doc.select('span.hl-ma0>font>a').map(e => e.text)
+        const detail_status = Util.checkStatus(doc.select('div.hl-data-xs>span')[0].text)
         const chapter_list = doc.select('a.module-play-list-link')
         const chapters = []
-        for (const l of chapter_list) {
-            chapters.push({ name: l.attr('title'), url: l.attr('href') })
+        for (const li of chapter_list) {
+            chapters.push({ name: li.attr('title'), url: li.attr('href') })
         }
 
         return {
@@ -137,7 +142,8 @@ class DefaultExtension extends MProvider {
             imageUrl: detail_cover,
             description: detail_desc,
             author: detail_author,
-            status: 0,
+            genre: detail_tags,
+            status: detail_status,
             episodes: chapters.reverse()
         };
 

@@ -94,16 +94,19 @@ class Util {
                 return 5
         }
     }
+    static pureString(str) {
+        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ').trim()
+    }
 }
 
 class DefaultExtension extends MProvider {
 
-    async getSearchCover(url){
+    async getSearchCover(url) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const res=await new Client().get(baseUrl+url)
-        const doc=new Document(res.body)
-        const coverImageUrl=doc.select('div.content>div.content_left>p>img')[0].attr('src')
-        return baseUrl+coverImageUrl
+        const res = await new Client().get(baseUrl + url)
+        const doc = new Document(res.body)
+        const coverImageUrl = doc.select('div.content>div.content_left>p>img')[0].attr('src')
+        return baseUrl + coverImageUrl
     }
 
     async getItems(url) {
@@ -177,18 +180,12 @@ class DefaultExtension extends MProvider {
 
         const detail_info_div = doc.select('div.item_title')[0]
         const name = detail_info_div.select('h1')[0].text
-        const detail_author=doc.select('div.item_info span')[2].text
-        const desc_p = detail_info_div.select('p')
-        let description = ""
-        for (let i = 0; i < desc_p.length; i++) {
-            if (i < 2) { continue }
-            description += desc_p[i].text
-        }
-
+        const detail_author = doc.select('div.item_info span')[2].text
+        const detail_desc = Array.from(doc.select('div.jianjie>p')).slice(1).map(v => v.text).join(' ')
         return {
             name: Util.decodeZH(name),
             imageUrl: baseUrl + doc.select('img')[1].attr("src"),
-            description: Util.decodeZH(description),
+            description: Util.pureString(Util.decodeZH(detail_desc)),
             author: Util.decodeZH(detail_author),
             status: 1,
             episodes: [{ name: '只有这一个章节', url: url }]
@@ -198,20 +195,19 @@ class DefaultExtension extends MProvider {
     // For anime episode video list
     async getPageList(url) {
         const baseUrl = mangayomiSources[0]['baseUrl']
-        const resFirstPage=await new Client().get(baseUrl+url)
-        const docFirstPage=new Document(resFirstPage.body)
-        const imageFirstSrc=docFirstPage.select('div.content>div.content_left>p>img').map(f=>f.attr('src'))
-        const pageMaxNum=Array.from(docFirstPage.select('div.page>a')).slice(-2,-1)[0].text
-        const imagePageUrl=Array(pageMaxNum-1).fill().map((v,i)=>`${baseUrl}`+url.replace(/\.html/,`_${i+1}.html`))
-        console.log(imagePageUrl)
-        const res=await Promise.all(imagePageUrl.map(async e=>{return await new Client().get(e)}))
-        const imageRemainSrc=res.map(e=>e.body).map(e=>{
-            const doc=new Document(e)
-            return doc.select('div.content>div.content_left>p>img').map(f=>f.attr('src'))
+        const resFirstPage = await new Client().get(baseUrl + url)
+        const docFirstPage = new Document(resFirstPage.body)
+        const imageFirstSrc = docFirstPage.select('div.content>div.content_left>p>img').map(f => f.attr('src'))
+        const pageMaxNum = Array.from(docFirstPage.select('div.page>a')).slice(-2, -1)[0].text
+        const imagePageUrl = Array(pageMaxNum - 1).fill().map((v, i) => `${baseUrl}` + url.replace(/\.html/, `_${i + 1}.html`))
+        const res = await Promise.all(imagePageUrl.map(async e => { return await new Client().get(e) }))
+        const imageRemainSrc = res.map(e => e.body).map(e => {
+            const doc = new Document(e)
+            return doc.select('div.content>div.content_left>p>img').map(f => f.attr('src'))
         })
 
-        return imageFirstSrc.concat(imageRemainSrc.flat()).map(e=>baseUrl+e)
-       
+        return imageFirstSrc.concat(imageRemainSrc.flat()).map(e => baseUrl + e)
+
     }
 
     // For manga chapter pages

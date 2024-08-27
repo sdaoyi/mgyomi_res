@@ -150,8 +150,6 @@ class DefaultExtension extends MProvider {
     }
 
     async search(query, page, filters) {
-
-        const endPage = 100
         const baseUrl = mangayomiSources[0]['baseUrl']
         const searchUrl = baseUrl + `/plus/search/index.asp?keyword=${query}&searchtype=titlekeywords&p=${page}`
         const res = await new Client().get(searchUrl)
@@ -161,13 +159,14 @@ class DefaultExtension extends MProvider {
         for (const element of elements) {
             const name = element.select('span')[0].text
             const link = element.select('a')[0].attr('href')
-
             items.push({
                 name: name,
-                imageUrl: await this.getSearchCover(link),
+                imageUrl: "",
                 link: link
             })
         }
+        const coverData = await Promise.all(items.map(async v => await this.getSearchCover(v.link)))
+        items.forEach((v, i) => { v.imageUrl = coverData[i] })
         return {
             list: items,
             hasNextPage: true

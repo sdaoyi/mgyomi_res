@@ -185,6 +185,9 @@ class DefaultExtension extends MProvider {
         let pageDoc
         do {
             let pageUrl = url.replace(/\.html$/, `_${startPageNum}.html`)
+            if(startPageNum===1){
+                pageUrl=url
+            }
             let pageRes = await new Client().get(pageUrl, header)
             pageDoc = new Document(pageRes.body)
             let onePageImageSrc = pageDoc.select('img.lazy').map(e => e.attr('data-original'))

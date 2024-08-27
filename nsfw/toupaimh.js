@@ -123,12 +123,17 @@ class DefaultExtension extends MProvider {
         const searchUrl = baseUrl + `/e/search/index.php`
         const res = await new Client().post(searchUrl, headers, { 'show': 'title', 'keyboard': query })
         const doc = new Document(res.body)
-        let redirectSearchUrl = doc.select('li.page-item>a')[0].attr('href').replace('_1.html', '')
-        redirectSearchUrl = `${baseUrl}${redirectSearchUrl}_${current_page}.html`
-        const redirectRes = await new Client().get(redirectSearchUrl)
-        const redirectDoc = new Document(redirectRes.body)
-
-        const elements = redirectDoc.select('div.item-media>a')
+        const hasNextPage = doc.select('li.page-item>a').length > 0
+        let finalDoc
+        if (hasNextPage) {
+            let redirectSearchUrl = doc.select('li.page-item>a')[0].attr('href').replace('_1.html', '')
+            redirectSearchUrl = `${baseUrl}${redirectSearchUrl}_${current_page}.html`
+            const redirectRes = await new Client().get(redirectSearchUrl)
+            finalDoc = new Document(redirectRes.body)
+        } else {
+            finalDoc = doc
+        }
+        const elements = finalDoc.select('div.item-media>a')
         const items = []
         for (const element of elements) {
             const name = element.attr('data-title')
@@ -142,7 +147,7 @@ class DefaultExtension extends MProvider {
         }
         return {
             list: items,
-            hasNextPage: true
+            hasNextPage: hasNextPage
         };
     }
 
@@ -180,7 +185,6 @@ class DefaultExtension extends MProvider {
         let pageDoc
         do {
             let pageUrl = url.replace(/\.html$/, `_${startPageNum}.html`)
-            console.log(pageUrl)
             let pageRes = await new Client().get(pageUrl, header)
             pageDoc = new Document(pageRes.body)
             let onePageImageSrc = pageDoc.select('img.lazy').map(e => e.attr('data-original'))

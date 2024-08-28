@@ -194,7 +194,9 @@ class DefaultExtension extends MProvider {
             let pageUrl = url.replace(/\.html$/, `_${startPageNum}.html`);
             [onePageImageSrc, hasNextPage] = await this.getOnePage(pageUrl, header)
             if (!/^http/.test(onePageImageSrc[0])) {
-                // 修改正确的url;
+                if(startPageNum===1){
+                    pageUrl=url
+                }
                 [onePageImageSrc, hasNextPage] = await this.getOnePage(pageUrl, header)
             }
             picSrcs.push(...onePageImageSrc)

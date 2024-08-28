@@ -176,24 +176,30 @@ class DefaultExtension extends MProvider {
             episodes: chapters.reverse()
         }
     }
+    async getOnePage(pageUrl, header) {
+        let pageRes = await new Client().get(pageUrl, header)
+        let pageDoc = new Document(pageRes.body)
+        let onePageImageSrc = pageDoc.select('img.lazy').map(e => e.attr('data-original'))
+        return [onePageImageSrc, pageDoc.select('p.info>a.down-page').filter(e => e.text === '下一页').length > 0]
+    }
 
     // For anime episode video list
     async getPageList(url) {
         const header = { 'user-agent': mangayomiSources[0]['userAgent'], 'Host': mangayomiSources[0]['baseUrl'].match(/\/\/(.*)$/)[1] }
         const picSrcs = []
         let startPageNum = 1
-        let pageDoc
+        let hasNextPage
+        let onePageImageSrc
         do {
-            let pageUrl = url.replace(/\.html$/, `_${startPageNum}.html`)
-            if(startPageNum===1){
-                pageUrl=url
+            let pageUrl = url.replace(/\.html$/, `_${startPageNum}.html`);
+            [onePageImageSrc, hasNextPage] = await this.getOnePage(pageUrl, header)
+            if (!/^http/.test(onePageImageSrc[0])) {
+                // 修改正确的url;
+                [onePageImageSrc, hasNextPage] = await this.getOnePage(pageUrl, header)
             }
-            let pageRes = await new Client().get(pageUrl, header)
-            pageDoc = new Document(pageRes.body)
-            let onePageImageSrc = pageDoc.select('img.lazy').map(e => e.attr('data-original'))
             picSrcs.push(...onePageImageSrc)
             startPageNum += 1
-        } while (pageDoc.select('p.info>a.down-page').filter(e => e.text === '下一页').length > 0);
+        } while (hasNextPage);
 
         return picSrcs
     }

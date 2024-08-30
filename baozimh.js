@@ -1,17 +1,38 @@
 const mangayomiSources = [{
     "name": "包子漫画",
     "lang": "zh",
-    "baseUrl": "https://bun.godamh.com",
+    "baseUrl": "https://baozimh.org",
     "apiUrl": "",
-    "iconUrl": "https://bun.godamh.com/assets/images/Logo.png",
+    "iconUrl": "https://baozimh.org/assets/images/Logo.png",
     "typeSource": "single",
     "isManga": true,
     "isNsfw": false,
     "version": "0.0.1",
     "dateFormat": "",
     "dateFormatLocale": "",
-    "pkgPath": ""
-}];
+    "pkgPath": "",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
+},
+{
+    "name": "包子漫画",
+    "lang": "zh",
+    "baseUrl": "https://hipmh.com",
+    "apiUrl": "",
+    "iconUrl": "https://hipmh.com/assets/images/Logo.png",
+    "typeSource": "single",
+    "isManga": true,
+    "isNsfw": false,
+    "version": "0.0.1",
+    "dateFormat": "",
+    "dateFormatLocale": "",
+    "pkgPath": "",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
+}
+];
+
+
+const baseUrl=mangayomiSources[0]['baseUrl']
+const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
 
 class Util {
     static decodeZH(str) {
@@ -63,61 +84,66 @@ class Util {
                 return 5
         }
     }
+    static pureString(str) {
+        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ').trim()
+    }
 }
 
-
 class DefaultExtension extends MProvider {
+    convertCoverSrc(bookId) {
+        return `https://cdn2.npdn.top/${bookId}/cover.jpg`
+    }
+
     async getItems(url) {
         const res = await new Client().get(url)
         const doc = new Document(res.body);
         const items = []
         const elements = doc.select('div.pb-2 a')
         for (const element of elements) {
+            let bookID = element.attr('href').match(/\/(\w+)(-|$)/)[1]
             items.push({
                 name: Util.decodeZH(element.select('h3')[0].text),
-                imageUrl: element.select('img')[0].attr('src'),
+                imageUrl: this.convertCoverSrc(bookID),
                 link: element.attr('href')
             })
         }
-        return items
+        return { items: items, hasNextPage: true }
     }
 
     getHeaders(url) {
         throw new Error("getHeaders not implemented");
     }
+
     async getPopular(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
-        const popUrl = baseUrl + '/hots'
+        const popUrl = baseUrl + `/hots/page/${page}`
+        const result=await this.getItems(popUrl,headers)
 
         return {
-            list: await this.getItems(popUrl),
-            hasNextPage: false
+            list: result.items,
+            hasNextPage: result.hasNextPage
         };
     }
+
     async getLatestUpdates(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
-        const updateUrl = baseUrl + '/dayup'
+        const updateUrl = baseUrl + `/dayup/page/${page}`
+        const result=await this.getItems(updateUrl,headers)
 
         return {
-            list: await this.getItems(updateUrl),
-            hasNextPage: false
+            list: result.items,
+            hasNextPage: result.hasNextPage
         };
-
     }
 
     async search(query, page, filters) {
-        const endPage=50
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const searchUrl = baseUrl + `/s/${query}`
 
         return {
             list: await this.getItems(searchUrl),
-            hasNextPage: page<endPage
+            hasNextPage: true
         };
 
     }
     async getDetail(url) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const res = await new Client().get(url)
         const doc = new Document(res.body)
         const name = doc.select('div#MangaCard img')[0].attr('alt')
@@ -125,15 +151,15 @@ class DefaultExtension extends MProvider {
         const detail_desc = doc.select('div#info p.text-medium')[0].text
         const detail_author = doc.select('div#info div.text-small')[0].text
         const detail_status = doc.select('div#info span.text-xs')[0].text
-        const manga_id=doc.select('div#mangachapters')[0].attr('data-mid')
+        const manga_id = doc.select('div#mangachapters')[0].attr('data-mid')
 
-        const res_chapter=await new Client().get(`https://api-get.mgsearcher.com/api/manga/get?mid=${manga_id}&mode=all`,
-            {"referer": url,"origin":baseUrl}
+        const res_chapter = await new Client().get(`https://api-get.mgsearcher.com/api/manga/get?mid=${manga_id}&mode=all`,
+            { "referer": url, "origin": baseUrl }
         )
-        const chapter_json=JSON.parse(res_chapter.body).data.chapters
+        const chapter_json = JSON.parse(res_chapter.body).data.chapters
         const chapters = []
         for (const cp of chapter_json) {
-            chapters.push({ name: Util.decodeZH(cp.attributes.title), url: url+'/'+cp.attributes.slug})
+            chapters.push({ name: Util.decodeZH(cp.attributes.title), url: url + '/' + cp.attributes.slug })
         }
 
         return {
@@ -148,21 +174,20 @@ class DefaultExtension extends MProvider {
     }
     // For anime episode video list
     async getPageList(url) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
-        const res=await new Client().get(url)
-        const doc=new Document(res.body)
-        const manga_id=doc.select('div#chapterContent')[0].attr('data-ms')
-        const manga_cs=doc.select('div#chapterContent')[0].attr('data-cs')
-        const headers={"referer": url,"origin":baseUrl}
-        const res_chapter=await new Client().get(`https://api-get.mgsearcher.com/api/chapter/getinfo?m=${manga_id}&c=${manga_cs}`, headers )
-        const chapter_data=JSON.parse(res_chapter.body).data
-        const chapter_json=chapter_data.info.images
+        const res = await new Client().get(url)
+        const doc = new Document(res.body)
+        const manga_id = doc.select('div#chapterContent')[0].attr('data-ms')
+        const manga_cs = doc.select('div#chapterContent')[0].attr('data-cs')
+        const headers = { "referer": url, "origin": baseUrl }
+        const res_chapter = await new Client().get(`https://api-get.mgsearcher.com/api/chapter/getinfo?m=${manga_id}&c=${manga_cs}`, headers)
+        const chapter_data = JSON.parse(res_chapter.body).data
+        const chapter_json = chapter_data.info.images
         const picUrls = []
         for (const cp of chapter_json) {
             picUrls.push(cp.url)
         }
-      
-        return picUrls.map(p=>{return {"url":p,"headers":headers}})
+
+        return picUrls.map(p => { return { "url": p, "headers": headers } })
     }
     // For manga chapter pages
     async getVideoList(url) {

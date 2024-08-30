@@ -90,8 +90,8 @@ class Util {
 }
 
 class DefaultExtension extends MProvider {
-    convertCoverSrc(bookId) {
-        return `https://cdn2.npdn.top/${bookId}/cover.jpg`
+    convertCoverSrc(bookID) {
+        return `https://cdn2.npdn.top/${bookID}/cover.jpg`
     }
 
     async getItems(url) {
@@ -147,7 +147,8 @@ class DefaultExtension extends MProvider {
         const res = await new Client().get(url)
         const doc = new Document(res.body)
         const name = doc.select('div#MangaCard img')[0].attr('alt')
-        const detail_cover = doc.select('div#MangaCard img')[0].attr('src')
+        const bookID = url.match(/manga\/(\w+)(-|\/|$)/)[1]
+        const detail_cover=this.convertCoverSrc(bookID)               
         const detail_desc = doc.select('div#info p.text-medium')[0].text
         const detail_author = doc.select('div#info div.text-small')[0].text
         const detail_status = doc.select('div#info span.text-xs')[0].text

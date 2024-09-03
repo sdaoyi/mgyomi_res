@@ -149,7 +149,7 @@ class DefaultExtension extends MProvider {
         const doc = new Document(res.body)
         const name = doc.select('div#MangaCard img')[0].attr('alt')
         const bookID = url.match(/manga\/(\w+)(-|\/|$)/)[1]
-        const detail_cover=this.convertCoverSrc(bookID)               
+        const detail_cover = this.convertCoverSrc(bookID)
         const detail_desc = doc.select('div#info p.text-medium')[0].text
         const detail_author = doc.select('div#info div.text-small')[0].text
         const detail_status = doc.select('div#info span.text-xs')[0].text

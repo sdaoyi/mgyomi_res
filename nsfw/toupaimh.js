@@ -14,7 +14,8 @@ const mangayomiSources = [{
     "userAgent": "Mozilla/5.0 (Linux; Android 13; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36 Edg/128.0.0.0"
 }];
 
-const headers = { "referer": mangayomiSources[0]['baseUrl'], "content-type": "application/x-www-form-urlencoded", "user-agent": mangayomiSources[0]['userAgent'] }
+const baseUrl = mangayomiSources[0]['baseUrl']
+const headers = { "referer": baseUrl, "content-type": "application/x-www-form-urlencoded", "user-agent": mangayomiSources[0]['userAgent'] }
 
 class Util {
     static decodeZH(str) {
@@ -83,8 +84,8 @@ class DefaultExtension extends MProvider {
             const imageUrl = element.select('img')[0].attr('src')
             items.push({
                 name: Util.decodeZH(name),
-                imageUrl: mangayomiSources[0]['baseUrl'] + imageUrl,
-                link: mangayomiSources[0]['baseUrl'] + link
+                imageUrl: baseUrl + imageUrl,
+                link: baseUrl + link
             })
         }
         return items
@@ -94,7 +95,6 @@ class DefaultExtension extends MProvider {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         let popUrl = baseUrl + `/hotmh/index_${page}.html`
         if (page < 2) {
             popUrl = baseUrl + `/hotmh`
@@ -105,7 +105,6 @@ class DefaultExtension extends MProvider {
         }
     }
     async getLatestUpdates(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         let updateUrl = baseUrl + `/latest/index_${page}.html`
         if (page < 2) {
             updateUrl = baseUrl + `/latest/index.html`
@@ -119,7 +118,6 @@ class DefaultExtension extends MProvider {
 
     async search(query, page, filters) {
         const current_page = page - 1
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const searchUrl = baseUrl + `/e/search/index.php`
         const res = await new Client().post(searchUrl, headers, { 'show': 'title', 'keyboard': query })
         const doc = new Document(res.body)
@@ -164,12 +162,12 @@ class DefaultExtension extends MProvider {
         const lists = item_list.select('li>a')
         const chapters = []
         for (const li of lists) {
-            chapters.push({ name: li.text, url: mangayomiSources[0]['baseUrl'] + li.attr('href') })
+            chapters.push({ name: li.text, url: baseUrl + li.attr('href') })
         }
 
         return {
             name: name,
-            imageUrl: mangayomiSources[0]['baseUrl'] + detail_cover,
+            imageUrl: baseUrl + detail_cover,
             description: detail_desc,
             author: detail_author,
             status: 5,
@@ -185,17 +183,16 @@ class DefaultExtension extends MProvider {
 
     // For anime episode video list
     async getPageList(url) {
-        const header = { 'user-agent': mangayomiSources[0]['userAgent'], 'Host': mangayomiSources[0]['baseUrl'].match(/\/\/(.*)$/)[1] }
         const picSrcs = []
         let startPageNum = 1
         let hasNextPage
         let onePageImageSrc
         do {
             let pageUrl = url.replace(/\.html$/, `_${startPageNum}.html`);
-            [onePageImageSrc, hasNextPage] = await this.getOnePage(pageUrl, header)
+            [onePageImageSrc, hasNextPage] = await this.getOnePage(pageUrl, headers)
             if (!/^http/.test(onePageImageSrc[0])) {
-                if(startPageNum===1){
-                    pageUrl=url
+                if (startPageNum === 1) {
+                    pageUrl = url
                 }
                 [onePageImageSrc, hasNextPage] = await this.getOnePage(pageUrl, header)
             }

@@ -141,8 +141,8 @@ class DefaultExtension extends MProvider {
         const bookID = url.match(/\/(\w*)\.html/)[1]
         const apiURL = `https://www.zhuzhumh.com/api/bookchapter?id=${bookID}&id2=1`
         const resApi = await new Client().get(apiURL)
-        for(const r of JSON.parse(resApi.body)){
-            apiChapter.push({name:r.chaptername,url:r.chapterurl})
+        for (const r of JSON.parse(resApi.body)) {
+            apiChapter.push({ name: r.chaptername, url: r.chapterurl })
         }
         return {
             name: name,
@@ -150,7 +150,7 @@ class DefaultExtension extends MProvider {
             description: detail_desc,
             author: detail_author,
             status: Util.checkStatus(detail_status),
-            episodes: [...chapters,...apiChapter]
+            episodes: [...chapters, ...apiChapter]
         }
     }
 

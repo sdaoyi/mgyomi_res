@@ -44,6 +44,9 @@ const mangayomiSources = [{
     "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
 }];
 
+const baseUrl = mangayomiSources[0]['baseUrl']
+const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
+
 class Util {
     static decodeZH(str) {
         const byteArray = new Uint8Array(
@@ -102,7 +105,6 @@ class Util {
 class DefaultExtension extends MProvider {
 
     async getSearchCover(url) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const res = await new Client().get(baseUrl + url)
         const doc = new Document(res.body)
         const coverImageUrl = doc.select('div.content>div.content_left>p>img')[0].attr('src')
@@ -120,7 +122,7 @@ class DefaultExtension extends MProvider {
             const imageUrl = element.select('img')[0].attr('src')
             items.push({
                 name: Util.decodeZH(name),
-                imageUrl: mangayomiSources[0]['baseUrl'] + imageUrl,
+                imageUrl: baseUrl + imageUrl,
                 link: link
             })
         }
@@ -132,7 +134,6 @@ class DefaultExtension extends MProvider {
     }
     async getPopular(page) {
         const endPage = 0
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const popUrl = `${baseUrl}/tj.html`
         return {
             list: await this.getItems(popUrl),
@@ -140,7 +141,6 @@ class DefaultExtension extends MProvider {
         }
     }
     async getLatestUpdates(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const endPage = 0
         const updateUrl = `${baseUrl}/zx.html`
         return {
@@ -150,7 +150,6 @@ class DefaultExtension extends MProvider {
     }
 
     async search(query, page, filters) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const searchUrl = baseUrl + `/plus/search/index.asp?keyword=${query}&searchtype=titlekeywords&p=${page}`
         const res = await new Client().get(searchUrl)
         const search_doc = new Document(res.body)
@@ -173,7 +172,6 @@ class DefaultExtension extends MProvider {
         };
     }
     async getDetail(url) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const res = await new Client().get(baseUrl + url)
         const doc = new Document(res.body)
 
@@ -193,7 +191,6 @@ class DefaultExtension extends MProvider {
 
     // For anime episode video list
     async getPageList(url) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const resFirstPage = await new Client().get(baseUrl + url)
         const docFirstPage = new Document(resFirstPage.body)
         const imageFirstSrc = docFirstPage.select('div.content>div.content_left>p>img').map(f => f.attr('src'))

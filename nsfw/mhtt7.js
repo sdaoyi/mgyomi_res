@@ -14,7 +14,8 @@ const mangayomiSources = [{
     "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
 }];
 
-const headers = { 'referer': mangayomiSources[0]['baseUrl'], 'user-agent': mangayomiSources[0]['userAgent'] };
+const baseUrl = mangayomiSources[0]['baseUrl']
+const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
 
 class Util {
     static decodeZH(str) {
@@ -84,7 +85,7 @@ class DefaultExtension extends MProvider {
             items.push({
                 name: name,
                 imageUrl: imageUrl,
-                link: mangayomiSources[0]['baseUrl'] + link
+                link: baseUrl + link
             })
         }
 
@@ -95,7 +96,6 @@ class DefaultExtension extends MProvider {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const popUrl = baseUrl + "/manhuapaihang"
         const result = await this.getItems(popUrl)
 
@@ -105,7 +105,6 @@ class DefaultExtension extends MProvider {
         }
     }
     async getLatestUpdates(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const updateUrl = baseUrl + "/xinshu"
         const result = await this.getItems(updateUrl)
 
@@ -117,10 +116,8 @@ class DefaultExtension extends MProvider {
     }
 
     async search(query, page, filters) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const searchUrl = baseUrl + `/sousuomanhua/${query}/page/${page}`
         const result = await this.getItems(searchUrl)
-
         return {
             list: result.items,
             hasNextPage: true
@@ -140,7 +137,7 @@ class DefaultExtension extends MProvider {
         const item_list = doc.select('div.hl-list-wrap>ul>li>a')
         const chapters = []
         for (const li of item_list) {
-            chapters.push({ name: li.text, url: mangayomiSources[0]['baseUrl'] + li.attr('href') })
+            chapters.push({ name: li.text, url: baseUrl + li.attr('href') })
         }
 
         return {

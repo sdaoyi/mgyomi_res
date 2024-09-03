@@ -140,7 +140,7 @@ class DefaultExtension extends MProvider {
     }
     async getDetail(url) {
         //  https://www.hmttmh.com/book/wodenvpengyouyoudianqiguaidanshihenkeai.html
-        const baseUrl=mangayomiSources[0]['baseUrl']
+        const baseUrl = mangayomiSources[0]['baseUrl']
         const res = await new Client().get(url, headers)
         const doc = new Document(res.body)
 
@@ -154,12 +154,12 @@ class DefaultExtension extends MProvider {
         for (const li of items) {
             chapters.push({ name: li.select('p')[0].text, url: li.attr('href') })
         }
-        const book_data_id=doc.select('dd.gengduo_dt1')[0].attr('data-id')
-        const book_data_vid=doc.select('dd.gengduo_dt1')[0].attr('data-vid')
-        const more_chapter_url=`${baseUrl}/api/bookchapter?id=${book_data_id}&id2=${book_data_vid}`
-        const more_res=await new Client().get(more_chapter_url,headers)
-        const more_json=JSON.parse(more_res.body)
-        const more_chapters=more_json.map((v,i)=>{return {name:v['chaptername'],url:v['chapterurl']}})
+        const book_data_id = doc.select('dd.gengduo_dt1')[0].attr('data-id')
+        const book_data_vid = doc.select('dd.gengduo_dt1')[0].attr('data-vid')
+        const more_chapter_url = `${baseUrl}/api/bookchapter?id=${book_data_id}&id2=${book_data_vid}`
+        const more_res = await new Client().get(more_chapter_url, headers)
+        const more_json = JSON.parse(more_res.body)
+        const more_chapters = more_json.map((v, i) => { return { name: v['chaptername'], url: v['chapterurl'] } })
         chapters.push(...more_chapters)
 
         return {
@@ -171,16 +171,16 @@ class DefaultExtension extends MProvider {
             episodes: chapters
         }
     }
-    genImgSrc(str){
+    genImgSrc(str) {
         p, a, c, k, e, d
 
-        e = function(c) {
+        e = function (c) {
             return (c < a ? '' : e(parseInt(c / a))) + ((c = c % a) > 35 ? String.fromCharCode(c + 29) : c.toString(36))
         }
-        ;
+            ;
         while (c--) {
             if (k[c]) {
-                p = p.replace(new RegExp('\\b' + e(c) + '\\b','g'), k[c])
+                p = p.replace(new RegExp('\\b' + e(c) + '\\b', 'g'), k[c])
             }
         }
         return p
@@ -190,12 +190,12 @@ class DefaultExtension extends MProvider {
 
         const res = await new Client().get(url, headers)
         const doc = new Document(res.body)
-        const imgScript=doc.select('script').filter(v=>/eval/.test(v.text))[0]
-        const scriptText=imgScript.text.match(/.*eval\((.*)\).*/)[1]
-        const tt=`function(p,a,c,k,e,d){e=function(c){return c.toString(36)};if(!''.replace(/^/,String)){while(c--){d[c.toString(a)]=k[c]||c.toString(a)}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('$(g(){$(\'#2\').3(\'4-5\',\'6://7.1.8/a/b/c-d.e\');$(\'f.9\').0()});',17,17,'lazyload|npdn|img_0|attr|data|original|https|cdn2|top|lazy|douluodaludisanbulongwangchuanshuo|1484842|001|ea385|jpg|img|function'.split('|'),0,{})`
+        const imgScript = doc.select('script').filter(v => /eval/.test(v.text))[0]
+        const scriptText = imgScript.text.match(/.*eval\((.*)\).*/)[1]
+        const tt = `function(p,a,c,k,e,d){e=function(c){return c.toString(36)};if(!''.replace(/^/,String)){while(c--){d[c.toString(a)]=k[c]||c.toString(a)}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('$(g(){$(\'#2\').3(\'4-5\',\'6://7.1.8/a/b/c-d.e\');$(\'f.9\').0()});',17,17,'lazyload|npdn|img_0|attr|data|original|https|cdn2|top|lazy|douluodaludisanbulongwangchuanshuo|1484842|001|ea385|jpg|img|function'.split('|'),0,{})`
         console.log(tt)
-       const z= eval('!'+tt)
-       console.log(`--------${z}----------`)
+        const z = eval('!' + tt)
+        console.log(`--------${z}----------`)
         return []
     }
     // For manga chapter pages

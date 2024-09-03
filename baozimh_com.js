@@ -141,22 +141,22 @@ class DefaultExtension extends MProvider {
         const detail_author = doc.select('h2.comics-detail__author')[0].text
         const detail_status = doc.select('div.tag-list>span.tag')[0].text
 
-        const chapters_doc=doc.select('#chapter-items>div.comics-chapters>a')  //24
-        const chapters_doc_remainder=doc.select('#chapters_other_list>div.comics-chapters>a')  //24
+        const chapters_doc = doc.select('#chapter-items>div.comics-chapters>a')  //24
+        const chapters_doc_remainder = doc.select('#chapters_other_list>div.comics-chapters>a')  //24
 
         let chapters = []
         for (const cp of chapters_doc) {
             chapters.push({ name: Util.pureString(cp.text), url: baseUrl + cp.attr('href') })
         }
-        for(const cpr of chapters_doc_remainder){
+        for (const cpr of chapters_doc_remainder) {
             chapters.push({ name: Util.pureString(cpr.text), url: baseUrl + cpr.attr('href') })
         }
-        if(doc.select('#chapter-items').length===0){
-            const chapters_last=doc.select('div.pure-g>div.comics-chapters>a')
-            for(const cp of chapters_last){
+        if (doc.select('#chapter-items').length === 0) {
+            const chapters_last = doc.select('div.pure-g>div.comics-chapters>a')
+            for (const cp of chapters_last) {
                 chapters.push({ name: Util.pureString(cp.text), url: baseUrl + cp.attr('href') })
             }
-            chapters=chapters.reverse()
+            chapters = chapters.reverse()
         }
 
         return {
@@ -173,7 +173,7 @@ class DefaultExtension extends MProvider {
     async getPageList(url) {
         const res = await new Client().get(url)
         const doc = new Document(res.body)
-        const elements=doc.select('ul.comic-contain>div>amp-img')
+        const elements = doc.select('ul.comic-contain>div>amp-img')
         const picUrls = []
         for (const element of elements) {
             picUrls.push(element.attr('data-src'))

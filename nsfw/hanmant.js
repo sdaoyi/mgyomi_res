@@ -14,7 +14,8 @@ const mangayomiSources = [{
     "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
 }];
 
-const headers = { 'referer': mangayomiSources[0]['baseUrl'], 'user-agent': mangayomiSources[0]['userAgent'] };
+const baseUrl = mangayomiSources[0]['baseUrl']
+const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
 
 class Util {
     static decodeZH(str) {
@@ -66,8 +67,8 @@ class Util {
                 return 5
         }
     }
-    static pureString(str){
-        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g,' ')
+    static pureString(str) {
+        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ')
     }
 }
 
@@ -95,20 +96,16 @@ class DefaultExtension extends MProvider {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const popUrl = baseUrl + "/index.php/custom/hot"
         const result = await this.getItems(popUrl)
-
         return {
             list: result.items,
             hasNextPage: result.hasNextPage
         }
     }
     async getLatestUpdates(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const updateUrl = baseUrl + "/index.php/custom/update"
         const result = await this.getItems(updateUrl)
-
         return {
             list: result.items,
             hasNextPage: result.hasNextPage
@@ -117,10 +114,8 @@ class DefaultExtension extends MProvider {
     }
 
     async search(query, page, filters) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const searchUrl = baseUrl + `/index.php/search/${query}/${page}`
         const result = await this.getItems(searchUrl)
-
         return {
             list: result.items,
             hasNextPage: true
@@ -154,7 +149,6 @@ class DefaultExtension extends MProvider {
 
     // For anime episode video list
     async getPageList(url) {
-
         const res = await new Client().get(url, headers)
         const doc = new Document(res.body)
         const picUrls = doc.select('div.chapterbox>li>img').map(e => e.attr('src'))

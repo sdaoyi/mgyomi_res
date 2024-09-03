@@ -14,7 +14,8 @@ const mangayomiSources = [{
     "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
 }];
 
-const headers = { 'referer': mangayomiSources[0]['baseUrl'], 'user-agent': mangayomiSources[0]['userAgent'] };
+const baseUrl = mangayomiSources[0]['baseUrl']
+const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
 
 class Util {
     static decodeZH(str) {
@@ -66,8 +67,8 @@ class Util {
                 return 5
         }
     }
-    static pureString(str){
-        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g,' ')
+    static pureString(str) {
+        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ')
     }
 }
 
@@ -96,20 +97,16 @@ class DefaultExtension extends MProvider {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const popUrl = baseUrl + `?page=${page}`
         const result = await this.getItems(popUrl)
-
         return {
             list: result.items,
             hasNextPage: result.hasNextPage
         }
     }
     async getLatestUpdates(page) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const updateUrl = baseUrl + `?page=${page}`
         const result = await this.getItems(updateUrl)
-
         return {
             list: result.items,
             hasNextPage: result.hasNextPage
@@ -118,10 +115,8 @@ class DefaultExtension extends MProvider {
     }
 
     async search(query, page, filters) {
-        const baseUrl = mangayomiSources[0]['baseUrl']
         const searchUrl = baseUrl + `/search?sort=popular&query=${query}&page=${page}`
         const result = await this.getItems(searchUrl)
-
         return {
             list: result.items,
             hasNextPage: true
@@ -149,19 +144,19 @@ class DefaultExtension extends MProvider {
 
     // For anime episode video list
     async getPageList(url) {
-        const detailUrl=url.replace(/\/\d+$/,'')
+        const detailUrl = url.replace(/\/\d+$/, '')
         const resDetail = await new Client().get(detailUrl, headers)
         const docDetail = new Document(resDetail.body)
-        let image_ext_pre3=docDetail.select('img.comic-rows-videos-div').slice(0,3).map(e=>e.attr('data-srcset')).map(e=>e.match(/\/\w+(\.\w+)$/)[1])
-        
+        let image_ext_pre3 = docDetail.select('img.comic-rows-videos-div').slice(0, 3).map(e => e.attr('data-srcset')).map(e => e.match(/\/\w+(\.\w+)$/)[1])
+
         const res = await new Client().get(url, headers)
         const doc = new Document(res.body)
         const pageNum = doc.select('a.fast-forward')[0].attr('data-page') - 0
         const pageUrl = doc.select('img#current-page-image')[0].attr('data-prefix')
-        const image_ext=image_ext_pre3.pop()
-       
-        let  picUrls = Array(pageNum).fill().map((_, i) => { return `${pageUrl}${i + 1}${image_ext}` })
-        picUrls=picUrls.map((e,i)=>i<image_ext_pre3.length?e.replace(/\.\w+$/,image_ext_pre3[i]):e)
+        const image_ext = image_ext_pre3.pop()
+
+        let picUrls = Array(pageNum).fill().map((_, i) => { return `${pageUrl}${i + 1}${image_ext}` })
+        picUrls = picUrls.map((e, i) => i < image_ext_pre3.length ? e.replace(/\.\w+$/, image_ext_pre3[i]) : e)
         return picUrls
     }
     // For manga chapter pages

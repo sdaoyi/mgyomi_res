@@ -1,5 +1,5 @@
 const mangayomiSources = [{
-    "name": "包子漫画",
+    "name": "包子漫画com",
     "lang": "zh",
     "baseUrl": "https://www.baozimh.com",
     "apiUrl": "",
@@ -144,12 +144,19 @@ class DefaultExtension extends MProvider {
         const chapters_doc=doc.select('#chapter-items>div.comics-chapters>a')  //24
         const chapters_doc_remainder=doc.select('#chapters_other_list>div.comics-chapters>a')  //24
 
-        const chapters = []
+        let chapters = []
         for (const cp of chapters_doc) {
             chapters.push({ name: Util.pureString(cp.text), url: baseUrl + cp.attr('href') })
         }
         for(const cpr of chapters_doc_remainder){
             chapters.push({ name: Util.pureString(cpr.text), url: baseUrl + cpr.attr('href') })
+        }
+        if(doc.select('#chapter-items').length===0){
+            const chapters_last=doc.select('div.pure-g>div.comics-chapters>a')
+            for(const cp of chapters_last){
+                chapters.push({ name: Util.pureString(cp.text), url: baseUrl + cp.attr('href') })
+            }
+            chapters=chapters.reverse()
         }
 
         return {

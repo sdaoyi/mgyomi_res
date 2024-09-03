@@ -1,5 +1,5 @@
 const mangayomiSources = [{
-    "name": "包子漫画",
+    "name": "包子漫画org",
     "lang": "zh",
     "baseUrl": "https://baozimh.org",
     "apiUrl": "",

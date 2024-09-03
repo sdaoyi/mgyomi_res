@@ -31,7 +31,7 @@ const mangayomiSources = [{
 ];
 
 
-const baseUrl=mangayomiSources[0]['baseUrl']
+const baseUrl = mangayomiSources[0]['baseUrl']
 const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
 
 class Util {
@@ -116,7 +116,7 @@ class DefaultExtension extends MProvider {
 
     async getPopular(page) {
         const popUrl = baseUrl + `/hots/page/${page}`
-        const result=await this.getItems(popUrl,headers)
+        const result = await this.getItems(popUrl, headers)
 
         return {
             list: result.items,
@@ -126,7 +126,7 @@ class DefaultExtension extends MProvider {
 
     async getLatestUpdates(page) {
         const updateUrl = baseUrl + `/dayup/page/${page}`
-        const result=await this.getItems(updateUrl,headers)
+        const result = await this.getItems(updateUrl, headers)
 
         return {
             list: result.items,
@@ -135,11 +135,12 @@ class DefaultExtension extends MProvider {
     }
 
     async search(query, page, filters) {
-        const searchUrl = baseUrl + `/s/${query}`
+        const searchUrl = baseUrl + `/s/${query}?page=${page}`
+        const result = await this.getItems(searchUrl)
 
         return {
-            list: await this.getItems(searchUrl),
-            hasNextPage: true
+            list: result.items,
+            hasNextPage: result.hasNextPage
         };
 
     }

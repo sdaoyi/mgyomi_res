@@ -16,7 +16,7 @@ const mangayomiSources = [{
 ];
 
 const baseUrl = mangayomiSources[0]['baseUrl']
-const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
+const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'],"Host": baseUrl.match(/(?<=\/\/).+/)[0] };
 
 class Util {
     static decodeZH(str) {
@@ -78,7 +78,9 @@ class DefaultExtension extends MProvider {
         return `https://static-tw.baozimh.com/cover/${imageID}?w=285&h=375&q=100`
     }
     async getItems(url) {
-        const res = await new Client().get(url)
+        const headers={"Accept": "application/json","referer":"https://www.baozimh.com/classify","Host": "www.baozimh.com",
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,ja;q=0.5,zh-TW;q=0.4"}
+        const res = await new Client().get(url,headers)
         const doc = JSON.parse(res.body);
         const items = []
         for (const it of doc['items']) {

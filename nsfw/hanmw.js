@@ -134,7 +134,6 @@ class DefaultExtension extends MProvider {
         const detailUrl = baseUrl + url
         const res = await new Client().get(detailUrl, headers)
         const doc = new Document(res.body)
-        console.log(doc)
         const name = doc.select('p.detail-main-info-title')[0].text
         const detail_cover = doc.select('img.detail-main-bg')[0].attr('data-original')
         const detail_desc = doc.select('p.detail-desc')[0].text

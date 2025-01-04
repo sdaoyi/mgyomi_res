@@ -77,11 +77,11 @@ class DefaultExtension extends MProvider {
         const res = await new Client().get(url, headers)
         const doc = new Document(res.body);
         const items = []
-        const elements = doc.select('div.hl-list-wrap>ul>li>a')
+        const elements = doc.select('li.hl-list-item')
         for (const element of elements) {
-            const name = element.attr('title')
-            const link = element.attr('href')
-            const imageUrl = element.attr('data-original')
+            const name = element.select('a')[0].attr('title')
+            const link =  element.select('a')[0].attr('href')
+            const imageUrl =  element.select('a')[0].attr('data-original')
             items.push({
                 name: name,
                 imageUrl: imageUrl,
@@ -89,14 +89,14 @@ class DefaultExtension extends MProvider {
             })
         }
 
-        return { items: items, hasNextPage: false }
+        return { items: items, hasNextPage: true }
     }
 
     getHeaders(url) {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
-        const popUrl = baseUrl + "/manhuapaihang"
+        const popUrl = baseUrl + `/manhuafenlei/all/ob/hits/st/all/page/${page}`
         const result = await this.getItems(popUrl)
 
         return {
@@ -105,7 +105,7 @@ class DefaultExtension extends MProvider {
         }
     }
     async getLatestUpdates(page) {
-        const updateUrl = baseUrl + "/xinshu"
+        const updateUrl = baseUrl + `/manhuafenlei/all/ob/time/st/all/page/${page}`
         const result = await this.getItems(updateUrl)
 
         return {

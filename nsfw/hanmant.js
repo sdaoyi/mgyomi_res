@@ -77,11 +77,11 @@ class DefaultExtension extends MProvider {
         const res = await new Client().get(url, headers)
         const doc = new Document(res.body);
         const items = []
-        const elements = doc.select('ul.u_list>li')
+        const elements = doc.select('ul.catagory-list>li')
         for (const element of elements) {
-            const name = element.select('div.neirong>a')[0].text
-            const link = element.select('div.neirong>a')[0].attr('href')
-            const imageUrl = element.select('div.pic>a')[0].select('img')[0].attr('src')
+            const name = element.select('a')[1].text
+            const link = element.select('a')[0].attr('href')
+            const imageUrl = element.select('img')[0].attr('src')
             items.push({
                 name: name,
                 imageUrl: imageUrl,
@@ -89,14 +89,14 @@ class DefaultExtension extends MProvider {
             })
         }
 
-        return { items: items, hasNextPage: false }
+        return { items: items, hasNextPage: true }
     }
 
     getHeaders(url) {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
-        const popUrl = baseUrl + "/index.php/custom/hot"
+        const popUrl = baseUrl + `/index.php/category/order/hits/page/${page}`
         const result = await this.getItems(popUrl)
         return {
             list: result.items,
@@ -104,7 +104,7 @@ class DefaultExtension extends MProvider {
         }
     }
     async getLatestUpdates(page) {
-        const updateUrl = baseUrl + "/index.php/custom/update"
+        const updateUrl = baseUrl + `/index.php/category/order/addtime/page/${page}`
         const result = await this.getItems(updateUrl)
         return {
             list: result.items,

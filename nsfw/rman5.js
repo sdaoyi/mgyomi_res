@@ -77,32 +77,34 @@ class DefaultExtension extends MProvider {
         const res = await new Client().get(url)
         const doc = new Document(res.body);
         const items = []
-        const elements = doc.select('a.hl-item-thumb')
+        const elements = doc.select('li.hl-list-item')
         for (const element of elements) {
             items.push({
-                name: element.attr('title'),
-                imageUrl: element.attr('data-original'),
-                link: element.attr('href')
+                name: element.select('a')[0].attr('title'),
+                imageUrl: element.select('a')[0].attr('data-original'),
+                link: element.select('a')[0].attr('href')
             })
         }
-        return items
+        return {items:items,hasNextPage:true}
     }
 
     getHeaders(url) {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
-        const popUrl = baseUrl + '/bookrank/daily'
+        const popUrl = baseUrl + `/bookcatalog/all/ob/hits/st/all/page/${page}`
+        const result=await this.getItems(popUrl)
         return {
-            list: await this.getItems(popUrl),
-            hasNextPage: false
+            list: result.items,
+            hasNextPage: result.hasNextPage
         };
     }
     async getLatestUpdates(page) {
-        const updateUrl = baseUrl + '/newbooks'
+        const updateUrl = baseUrl + `/bookcatalog/all/ob/time/st/all/page/${page}`
+        const result=await this.getItems(updateUrl)
         return {
-            list: await this.getItems(updateUrl),
-            hasNextPage: false
+            list: result.items,
+            hasNextPage: result.hasNextPage
         };
 
     }

@@ -1,9 +1,9 @@
 const mangayomiSources = [{
-    "name": "韩漫100",
+    "name": "韩漫网",
     "lang": "zh",
-    "baseUrl": "https://www.hanmanh.com",
+    "baseUrl": "https://m.hanmw.com",
     "apiUrl": "",
-    "iconUrl": "https://www.hanmanh.com/favicon.ico",
+    "iconUrl": "https://fastly.jsdelivr.net/gh/cmscdn/mh1/default/images/normal-top-back.png",
     "typeSource": "single",
     "isManga": true,
     "isNsfw": true,
@@ -12,8 +12,7 @@ const mangayomiSources = [{
     "dateFormatLocale": "",
     "pkgPath": "",
     "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/127.0.0.0"
-}
-];
+}];
 
 const baseUrl = mangayomiSources[0]['baseUrl']
 const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
@@ -69,83 +68,105 @@ class Util {
         }
     }
     static pureString(str) {
-        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ')
+        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ').trim()
     }
 }
 
 class DefaultExtension extends MProvider {
     async getItems(url) {
-        const res = await new Client().get(url,headers)
+        const res = await new Client().get(url)
         const doc = new Document(res.body);
         const items = []
-        const elements = doc.select('ul.down-game-ul>li>a:first-child')
+        const elements = doc.select('ul.manga-list-2>li')
         for (const element of elements) {
             items.push({
-                name: element.select('img')[0].attr('alt'),
-                imageUrl: element.select('img')[0].attr('src'),
-                link: baseUrl+element.attr('href')
+                name: element.select('a')[1].text,
+                imageUrl: element.select('img')[0].attr('data-original'),
+                link: element.select('a')[1].attr('href')
             })
         }
-        return items
+        return {items:items,hasNextPage:true}
     }
 
     getHeaders(url) {
         throw new Error("getHeaders not implemented");
     }
     async getPopular(page) {
-        const popUrl = baseUrl + `/category/order/hits/page/${page}`
+        const popUrl = baseUrl + `/manhualist?page=${page}`
+        const result=await this.getItems(popUrl)
         return {
-            list: await this.getItems(popUrl),
-            hasNextPage: true
+            list: result.items,
+            hasNextPage: result.hasNextPage
         };
     }
     async getLatestUpdates(page) {
-        const updateUrl = baseUrl + `/category/order/addtime/page/${page}`
+        const updateUrl = baseUrl + `/manhualist?tag=-1&area=-1&end=1&page=${page}`
+        const result=await this.getItems(updateUrl)
         return {
-            list: await this.getItems(updateUrl),
-            hasNextPage: true
+            list: result.items,
+            hasNextPage: result.hasNextPage
         };
 
     }
-
     async search(query, page, filters) {
-        const searchUrl = baseUrl + `/search/${query}/${page}`
+        const searchUrl = baseUrl + `/search?keyword=${query}`
         return {
-            list: await this.getItems(searchUrl),
-            hasNextPage: true
+            list: await this.getSearchItems(searchUrl),
+            hasNextPage: false
         };
 
+    }
+    async getSearchItems(url) {
+        const res = await new Client().get(url,headers)
+        const doc = new Document(res.body);
+        const items = []
+        const elements = doc.select('ul.book-list>li')
+        for (const element of elements) {
+            items.push({
+                name: element.select('a')[0].attr('title'),
+                imageUrl: element.select('img')[0].attr('data-original'),
+                link: element.select('a')[0].attr('href')
+            })
+        }
+        return items
     }
     async getDetail(url) {
-        const res = await new Client().get(url,headers)
+        const detailUrl = baseUrl + url
+        const res = await new Client().get(detailUrl, headers)
         const doc = new Document(res.body)
-        const name = doc.select('h2.detail-name')[0].text
-        const detail_cover = doc.select('div.detail-left>img')[0].attr('src')
-        const detail_desc = doc.select('h3.detail-desc')[0].text
-        const detail_author = doc.select('h3.detail-type>em')[0].text
-        const detail_status = doc.select('h3.detail-type>em')[3].text
-        const chapter_list = doc.select('a.wekrank-slide')
+        console.log(doc)
+        const name = doc.select('p.detail-main-info-title')[0].text
+        const detail_cover = doc.select('img.detail-main-bg')[0].attr('data-original')
+        const detail_desc = doc.select('p.detail-desc')[0].text
+        const detail_author = doc.select('p.detail-main-info-author')[1].text
+        const detail_status = 5
+        const chapter_list = doc.select('#detail-list-select>li>a')
         const chapters = []
-        for (const ll of chapter_list) {
-            chapters.push({ name: Util.pureString(ll.text), url: baseUrl+ll.attr('href') })
+        for (const li of chapter_list) {
+            chapters.push({ name: li.attr('title'), url: li.attr('href') })
         }
 
         return {
             name: name,
             imageUrl: detail_cover,
             description: detail_desc,
-            author: detail_author,
-            status: Util.checkStatus(detail_status),
+            author: Util.pureString(detail_author),
+            status: detail_status,
             episodes: chapters.reverse()
         };
 
     }
     // For anime episode video list
     async getPageList(url) {
-        const res = await new Client().get(url)
+        const pageListUrl = baseUrl + url
+        const res = await new Client().get(pageListUrl)
         const doc = new Document(res.body)
-        const picList = doc.select('ul.comic-list>li.comic-page>img')
-        return picList.map(v=>v.attr('src'))
+        const picList = doc.select('#cp_img img.lazy')
+        const picUrls = []
+        for (const p of picList) {
+            picUrls.push(p.attr('data-original'))
+        }
+        return picUrls
     }
     // For manga chapter pages
     async getVideoList(url) {

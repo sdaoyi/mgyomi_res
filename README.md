@@ -6,17 +6,17 @@
 
 ### NSFW
 
-| 名称 | url | 全部、popular
-| --- | ---- |
-鸟鸟韩漫 |  https://nnhanman6.com  |    https://nnhanman9.com/comics/all/ob/hits/st/all/page/5
-韩漫推荐 |  https://www.hanmant.com   | https://www.hanmanr.com/index.php/category/order/hits/page/44
-肉漫屋   |  https://rman5.com  |        https://rman5.org/bookcatalog/all/ob/time/st/all/page/8
-秀人美女 |  https://www.xiu01.top 、 
-漫画天堂 |  https://mhtt7.com  |       https://mhtt7.com/manhuafenlei/all/ob/time/st/all/page/8
-头牌漫画 |  https://www.toupaimh.com | https://www.toupaimh.com/hotmh/index_2.html
-韩漫网   | https://m.hanmw.com |       https://m.hanmw.com/manhualist?page=3 
-hanime1  | https://hanime1.me/comics  | https://hanime1.me/comics?page=7
-韩漫100  | https://www.hanmanh.com |  https://www.hanmanh.com/category/order/hits/page/2
+| 名称 | url | POP
+|--- |--- |---
+| 鸟鸟韩漫 |  https://nnhanman6.com  |    https://nnhanman9.com/comics/all/ob/hits/st/all/page/5
+| 韩漫推荐 |  https://www.hanmant.com   | https://www.hanmanr.com/index.php/category/order/hits/page/44
+| 肉漫屋   |  https://rman5.com  |        https://rman5.org/bookcatalog/all/ob/time/st/all/page/8
+| 秀人美女 |  https://www.xiu01.top 、 
+| 漫画天堂 |  https://mhtt7.com  |       https://mhtt7.com/manhuafenlei/all/ob/time/st/all/page/8
+| 头牌漫画 |  https://www.toupaimh.com | https://www.toupaimh.com/hotmh/index_2.html
+| 韩漫网   | https://m.hanmw.com |       https://m.hanmw.com/manhualist?page=3 
+| hanime1  | https://hanime1.me/comics  | https://hanime1.me/comics?page=7
+| 韩漫100  | https://www.hanmanh.com |  https://www.hanmanh.com/category/order/hits/page/2
 
 
 ### NORMAL

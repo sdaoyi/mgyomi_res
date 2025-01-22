@@ -110,11 +110,11 @@ class DefaultExtension extends MProvider {
     }
     async search(query, page, filters) {
         const searchUrl = baseUrl + `/cata.php?key=${query}`
+        const result=await this.getItems(searchUrl)
         return {
-            list: await this.getItems(searchUrl),
+            list:  result.items,
             hasNextPage: false
-        };
-
+        }
     }
     async getDetail(url) {
         const detailUrl = baseUrl + url

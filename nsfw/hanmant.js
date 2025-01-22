@@ -115,12 +115,32 @@ class DefaultExtension extends MProvider {
 
     async search(query, page, filters) {
         const searchUrl = baseUrl + `/index.php/search/${query}/${page}`
-        const result = await this.getItems(searchUrl)
+        const result = await this.getSearchItem(searchUrl)
         return {
             list: result.items,
             hasNextPage: true
         };
     }
+
+    async getSearchItem(url) {
+        const res = await new Client().get(url, headers)
+        const doc = new Document(res.body);
+        const items = []
+        const elements = doc.select('ul.u_list>li')
+        for (const element of elements) {
+            const name = element.select('a')[1].text
+            const link = element.select('a')[0].attr('href')
+            const imageUrl = element.select('img')[0].attr('src')
+            items.push({
+                name: name,
+                imageUrl: imageUrl,
+                link: mangayomiSources[0]['baseUrl'] + link
+            })
+        }
+
+        return { items: items, hasNextPage: true }
+    }
+
     async getDetail(url) {
         //   https://www.hanmant.com/index.php/comic/zhegongsiguiwole
         const res = await new Client().get(url, headers)

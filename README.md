@@ -30,3 +30,19 @@ hanime1  | https://hanime1.me/comics  | https://hanime1.me/comics?page=7
 | 包子漫畫 |https://www.baozimh.com/ 
 | 百漫屋   |https://www.ql1.net/ 
 | 千漫谷   |https://www.wuforcongress.com/ 
+| x | https://www.colamanga.com/
+| x | https://www.ttkmh.com/
+| x | https://www.manhua55.com/
+| x | https://www.guomanwang.com/
+| x | https://www.bilicomic.net/
+| v | https://www.dumanwu.com/
+| v | https://baozimh.org/ 
+
+
+
+
+
+
+https://www.colamanga.com/show?orderBy=update&page=2
+https://www.colamanga.com/show?orderBy=monthlyCount&page=2
+https://www.colamanga.com/search?type=1&searchString=我的&page=2

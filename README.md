@@ -37,6 +37,7 @@
 | x | https://www.bilicomic.net/
 | v | https://www.dumanwu.com/
 | v | https://baozimh.org/ 
+| v | https://www.baozimh.com/ 
 
 
 

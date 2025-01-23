@@ -32,7 +32,12 @@ const mangayomiSources = [{
 
 
 const baseUrl = mangayomiSources[0]['baseUrl']
-const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
+const headers={
+    "user-agent": mangayomiSources[0]['userAgent'],
+    accept: "*/*",
+    origin: "https://baozimh.org",
+    referer: "https://baozimh.org/",
+   }
 
 class Util {
     static decodeZH(str) {
@@ -101,9 +106,11 @@ class DefaultExtension extends MProvider {
         const elements = doc.select('div.pb-2 a')
         for (const element of elements) {
             let bookID = element.attr('href').match(/\/(\w+)(-|$)/)[1]
+            let imageSrc=element.select('img')[0].attr('src').match(/(?<=\?url=)(https.*)(?=&w)/)[1]
+           
             items.push({
                 name: Util.decodeZH(element.select('h3')[0].text),
-                imageUrl: this.convertCoverSrc(bookID),
+                imageUrl: decodeURIComponent(imageSrc),  
                 link: element.attr('href')
             })
         }
@@ -115,7 +122,7 @@ class DefaultExtension extends MProvider {
     }
 
     async getPopular(page) {
-        const popUrl = baseUrl + `/hots/page/${page}`
+        const popUrl = baseUrl + `/manga/page/${page}`
         const result = await this.getItems(popUrl, headers)
 
         return {
@@ -147,17 +154,17 @@ class DefaultExtension extends MProvider {
     async getDetail(url) {
         const res = await new Client().get(url)
         const doc = new Document(res.body)
+        const chapURL=baseUrl+doc.select('#morechap>a')[0].attr('href')
+        
         const name = doc.select('div#MangaCard img')[0].attr('alt')
         const bookID = url.match(/manga\/(\w+)(-|\/|$)/)[1]
-        const detail_cover = this.convertCoverSrc(bookID)
+        const detail_cover = doc.select('img.object-cover')[0].attr('src')
         const detail_desc = doc.select('div#info p.text-medium')[0].text
         const detail_author = doc.select('div#info div.text-small')[0].text
         const detail_status = doc.select('div#info span.text-xs')[0].text
         const manga_id = doc.select('div#mangachapters')[0].attr('data-mid')
-
-        const res_chapter = await new Client().get(`https://api-get.mgsearcher.com/api/manga/get?mid=${manga_id}&mode=all`,
-            { "referer": url, "origin": baseUrl }
-        )
+  
+        const res_chapter = await new Client().get(`https://api-get-v2.mgsearcher.com/api/manga/get?mid=${manga_id}&mode=all`, headers )
         const chapter_json = JSON.parse(res_chapter.body).data.chapters
         const chapters = []
         for (const cp of chapter_json) {
@@ -176,17 +183,16 @@ class DefaultExtension extends MProvider {
     }
     // For anime episode video list
     async getPageList(url) {
-        const res = await new Client().get(url)
+        const res = await new Client().get(url,headers)
         const doc = new Document(res.body)
         const manga_id = doc.select('div#chapterContent')[0].attr('data-ms')
         const manga_cs = doc.select('div#chapterContent')[0].attr('data-cs')
-        const headers = { "referer": url, "origin": baseUrl }
-        const res_chapter = await new Client().get(`https://api-get.mgsearcher.com/api/chapter/getinfo?m=${manga_id}&c=${manga_cs}`, headers)
+        const res_chapter = await new Client().get(`https://api-get-v2.mgsearcher.com/api/chapter/getinfo?m=${manga_id}&c=${manga_cs}`, headers)
         const chapter_data = JSON.parse(res_chapter.body).data
-        const chapter_json = chapter_data.info.images
+        const images_list = chapter_data.info.images.images
         const picUrls = []
-        for (const cp of chapter_json) {
-            picUrls.push(cp.url)
+        for (const img of images_list) {
+            picUrls.push('https://f40-1-4.g-mh.online'+ img.url)
         }
 
         return picUrls.map(p => { return { "url": p, "headers": headers } })

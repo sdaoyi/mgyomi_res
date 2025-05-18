@@ -1,9 +1,9 @@
 const mangayomiSources = [{
     "name": "鸟鸟韩漫",
     "lang": "zh",
-    "baseUrl": "https://nnhanman7.com",
+    "baseUrl": "https://nnhanman9.com",
     "apiUrl": "",
-    "iconUrl": "https://nnhanman7.com/images/logo.png",
+    "iconUrl": "https://nnhanman9.com/images/logo.png",
     "typeSource": "single",
     "isManga": true,
     "isNsfw": true,

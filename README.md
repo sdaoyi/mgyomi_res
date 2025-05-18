@@ -1,5 +1,10 @@
 # manga_res
 
+### 添加
+
+<a href="https://intradeus.github.io/http-protocol-redirector?r=mangayomi://add-repo?repo_name=mgyomi_res%26repo_url=https://github.com/sdaoyi/mgyomi_res%26manga_url=https://cdn.jsdelivr.net/gh/sdaoyi/mgyomi_res@main/cartoon_index.json"><img alt="Add manga repository" src="images/add-anime-repository.png" height="35">添加漫画源</a>
+
+
 ### 对应
  latest   更新
  popular  全部

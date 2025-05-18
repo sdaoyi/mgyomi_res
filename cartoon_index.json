@@ -1,23 +1,25 @@
 [
     {
-        "name": "韩漫100",
-        "id": 666000000,
-        "baseUrl": "https://www.hanmanh.com",
+        "name": "鸟鸟韩漫",
+        "id": 666000001,
+        "baseUrl": "https://nnhanman9.com/",
         "lang": "zh",
         "typeSource": "single",
-        "iconUrl": "https://www.hanmanh.com/favicon.ico",
+        "iconUrl": "https://nnhanman9.com/favicon.ico",
         "dateFormat": "MMMM dd, yyyy",
         "dateFormatLocale": "en_us",
         "isNsfw": true,
         "hasCloudflare": false,
-        "sourceCodeUrl": "https://raw.githubusercontent.com/sdaoyi/mangayomi_res/refs/heads/main/nsfw/hanmanh.js?token=GHSAT0AAAAAAC7BALVXJFVXD36A3JD7ZMDQZ5RZKIA",
+        "sourceCodeUrl": "https://raw.githubusercontent.com/sdaoyi/mgyomi_res/refs/heads/main/nsfw/nnhanman9.js",
         "apiUrl": "",
-        "version": "0.1.1",
+        "version": "0.0.1",
         "isManga": true,
         "itemType": 0,
         "isFullData": false,
         "appMinVerReq": "0.5.0",
         "additionalParams": "",
-        "sourceCodeLanguage": 1
+        "sourceCodeLanguage": 1,
+        "notes": ""
     }
+  
 ]

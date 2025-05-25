@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "itemType": 0,
     "isNsfw": true,
-    "version": "0.0.2",
+    "version": "0.0.3",
     "dateFormat": "",
     "dateFormatLocale": "",
     "pkgPath": "",
@@ -18,58 +18,73 @@ const baseUrl = mangayomiSources[0]['baseUrl']
 const headers = { 'referer': baseUrl, 'user-agent': mangayomiSources[0]['userAgent'] };
 
 class Util {
-    static decodeZH(str) {
-        const byteArray = new Uint8Array(
-            Array.from(str).map(char => char.charCodeAt(0))
+  static decodeZH(str) {
+    const byteArray = new Uint8Array(
+      Array.from(str).map((char) => char.charCodeAt(0))
+    );
+    const correctText = Util.utf8Decode(byteArray);
+    return correctText;
+  }
+  static utf8Decode(bytes) {
+    let string = "";
+    let i = 0;
+
+    while (i < bytes.length) {
+      let byte1 = bytes[i++];
+      if (byte1 < 0x80) {
+        string += String.fromCharCode(byte1);
+      } else if (byte1 < 0xe0) {
+        let byte2 = bytes[i++];
+        string += String.fromCharCode(((byte1 & 0x1f) << 6) | (byte2 & 0x3f));
+      } else if (byte1 < 0xf0) {
+        let byte2 = bytes[i++];
+        let byte3 = bytes[i++];
+        string += String.fromCharCode(
+          ((byte1 & 0x0f) << 12) | ((byte2 & 0x3f) << 6) | (byte3 & 0x3f)
         );
-        const correctText = Util.utf8Decode(byteArray);
-        return correctText
+      } else {
+        let byte2 = bytes[i++];
+        let byte3 = bytes[i++];
+        let byte4 = bytes[i++];
+        let codePoint =
+          (((byte1 & 0x07) << 18) |
+            ((byte2 & 0x3f) << 12) |
+            ((byte3 & 0x3f) << 6) |
+            (byte4 & 0x3f)) -
+          0x10000;
+        string += String.fromCharCode(
+          0xd800 + (codePoint >> 10),
+          0xdc00 + (codePoint & 0x3ff)
+        );
+      }
     }
-    static utf8Decode(bytes) {
-        let string = '';
-        let i = 0;
 
-        while (i < bytes.length) {
-            let byte1 = bytes[i++];
-            if (byte1 < 0x80) {
-                string += String.fromCharCode(byte1);
-            } else if (byte1 < 0xE0) {
-                let byte2 = bytes[i++];
-                string += String.fromCharCode(((byte1 & 0x1F) << 6) | (byte2 & 0x3F));
-            } else if (byte1 < 0xF0) {
-                let byte2 = bytes[i++];
-                let byte3 = bytes[i++];
-                string += String.fromCharCode(((byte1 & 0x0F) << 12) | ((byte2 & 0x3F) << 6) | (byte3 & 0x3F));
-            } else {
-                let byte2 = bytes[i++];
-                let byte3 = bytes[i++];
-                let byte4 = bytes[i++];
-                let codePoint = (((byte1 & 0x07) << 18) | ((byte2 & 0x3F) << 12) | ((byte3 & 0x3F) << 6) | (byte4 & 0x3F)) - 0x10000;
-                string += String.fromCharCode(0xD800 + (codePoint >> 10), 0xDC00 + (codePoint & 0x3FF));
-            }
-        }
+    return string;
+  }
+  static checkStatus(str) {
+    if (typeof str !== "string") return 5; // 非字符串输入处理
 
-        return string;
+    const statusMap = [
+      { patterns: [/(连载|連載|ongoing)/i], value: 0 },
+      { patterns: [/(完结|完結|complete)/i], value: 1 },
+      { patterns: [/(请假|請假|hiatus)/i], value: 2 },
+      { patterns: [/(取消|取消|canceled)/i], value: 3 },
+      { patterns: [/(出版|出版|publishingFinished)/i], value: 4 },
+    ];
+
+    const normalizedStr = str.toLowerCase();
+
+    for (const status of statusMap) {
+      if (status.patterns.some((pattern) => pattern.test(normalizedStr))) {
+        return status.value;
+      }
     }
-    static checkStatus(str) {
-        switch (true) {
-            case /(.*连载.*|.*連載.*|.*ongoing.*)/i.test(str):
-                return 0
-            case /(.*完结.*|.*完結.*|.*complete.*)/i.test(str):
-                return 1
-            case /(.*请假.*|.*請假.*|.*hiatus.*)/i.test(str):
-                return 2
-            case /(.*取消.*|.*取消.*|.*canceled.*)/i.test(str):
-                return 3
-            case /(.*出版.*|.*出版.*|.*publishingFinished.*)/i.test(str):
-                return 4
-            default:
-                return 5
-        }
-    }
-    static pureString(str) {
-        return str.replace(/(\r\n|\n)/g, ' ').replace(/\s+/g, ' ')
-    }
+
+    return 5; // 默认值
+  }
+  static pureString(str) {
+    return str.replace(/(\r\n|\n)/g, " ").replace(/\s+/g, " ").trim();
+  }
 }
 
 class DefaultExtension extends MProvider {

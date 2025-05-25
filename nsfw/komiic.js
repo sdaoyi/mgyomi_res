@@ -8,7 +8,7 @@ const mangayomiSources = [
     typeSource: "single",
     itemType: 0,
     isNsfw: true,
-    version: "0.0.2",
+    version: "0.0.3",
     dateFormat: "",
     dateFormatLocale: "",
     pkgPath: "",
@@ -89,7 +89,7 @@ class Util {
     return 5; // 默认值
   }
   static pureString(str) {
-    return str.replace(/(\r\n|\n)/g, " ").replace(/\s+/g, " ");
+    return str.replace(/(\r\n|\n)/g, " ").replace(/\s+/g, " ").trim();
   }
 }
 

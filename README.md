@@ -57,9 +57,7 @@ https://www.colamanga.com/show?orderBy=update&page=2
 https://www.colamanga.com/show?orderBy=monthlyCount&page=2
 https://www.colamanga.com/search?type=1&searchString=我的&page=2
 
-//
 
 https://m.happymh.com/ 
-https://komiic.com/comic/3746
 https://mycomic.com/chapters/810270
 https://www.mangabz.com/m379005/

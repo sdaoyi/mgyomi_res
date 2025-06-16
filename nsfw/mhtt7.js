@@ -3,7 +3,7 @@ const mangayomiSources = [{
     "lang": "zh",
     "baseUrl": "https://mhtt7.com",
     "apiUrl": "",
-    "iconUrl": "https://mhtt7.com/imgs/favicon.svg",
+    "iconUrl": "https://mhtt7.com/imgs/logo_black.png",
     "typeSource": "single",
     "itemType": 0,
     "isNsfw": true,

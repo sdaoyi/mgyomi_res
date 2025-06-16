@@ -4,7 +4,7 @@ const mangayomiSources = [
     lang: "zh",
     baseUrl: "https://bakamh.com",
     apiUrl: "",
-    iconUrl: "https://bakamh.com/favicon.ico",
+    iconUrl: "https://bakamh.com/wp-content/uploads/2022/07/cropped-ico.png",
     typeSource: "single",
     itemType: 0,
     isNsfw: true,
